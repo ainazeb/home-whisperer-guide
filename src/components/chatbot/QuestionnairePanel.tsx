@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,14 +13,44 @@ interface QuestionnairePanelProps {
   onSubmit: (answers: Record<string, any>) => void;
 }
 
+interface BaseQuestion {
+  id: string;
+  question: string;
+  type: string;
+  description?: string;
+}
+
+interface SliderQuestion extends BaseQuestion {
+  type: "slider";
+  min: number;
+  max: number;
+  step: number;
+  defaultValue: number;
+}
+
+interface SelectQuestion extends BaseQuestion {
+  type: "select";
+  options: { value: string; label: string }[];
+}
+
+interface CheckboxQuestion extends BaseQuestion {
+  type: "checkbox";
+  options: { value: string; label: string }[];
+}
+
+interface RadioQuestion extends BaseQuestion {
+  type: "radio";
+  options: { value: string; label: string }[];
+}
+
+type Question = SliderQuestion | SelectQuestion | CheckboxQuestion | RadioQuestion;
+
 const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack, onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
 
-  // Define questions based on the section
   const questions = getQuestionsForSection(section);
   
-  // Calculate progress percentage
   const progress = ((currentStep + 1) / questions.length) * 100;
   
   const handleNext = () => {
@@ -47,7 +76,6 @@ const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack
     });
   };
   
-  // Current question data
   const currentQuestion = questions[currentStep];
 
   return (
@@ -87,8 +115,7 @@ const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack
   );
 };
 
-// Helper function to get questions based on section
-function getQuestionsForSection(section: ChatSection) {
+function getQuestionsForSection(section: ChatSection): Question[] {
   switch (section) {
     case "basic-questions":
       return [
@@ -138,6 +165,7 @@ function getQuestionsForSection(section: ChatSection) {
         {
           id: "ageGroups",
           question: "Which age demographics are important to you?",
+          description: "Select all that apply to your preferred neighborhood",
           type: "checkbox",
           options: [
             { value: "young", label: "Young Adults (20-35)" },
@@ -159,6 +187,7 @@ function getQuestionsForSection(section: ChatSection) {
         {
           id: "futureProjections",
           question: "How important are future demographic projections to you?",
+          description: "This affects how we prioritize long-term demographic trends",
           type: "slider",
           min: 1,
           max: 5,
@@ -171,6 +200,7 @@ function getQuestionsForSection(section: ChatSection) {
         {
           id: "greenSpace",
           question: "How important is access to green spaces?",
+          description: "Parks, community gardens, and natural areas",
           type: "slider",
           min: 1,
           max: 5,
@@ -192,6 +222,7 @@ function getQuestionsForSection(section: ChatSection) {
         {
           id: "development",
           question: "Are you comfortable with ongoing construction nearby?",
+          description: "New developments can increase property value but create temporary disruption",
           type: "radio",
           options: [
             { value: "yes", label: "Yes, I want to be in a developing area" },
@@ -217,6 +248,7 @@ function getQuestionsForSection(section: ChatSection) {
         {
           id: "commuteTime",
           question: "What's your maximum acceptable commute time?",
+          description: "In minutes to your most frequent destination",
           type: "slider",
           min: 10,
           max: 60,
@@ -239,6 +271,7 @@ function getQuestionsForSection(section: ChatSection) {
         {
           id: "smartFeatures",
           question: "Which smart home features interest you?",
+          description: "Select all that apply to your preferences",
           type: "checkbox",
           options: [
             { value: "thermostat", label: "Smart Thermostats" },
@@ -260,6 +293,7 @@ function getQuestionsForSection(section: ChatSection) {
         {
           id: "futureProof",
           question: "Do you want a home that's ready for future tech?",
+          description: "Some homes are built with future technology integration in mind",
           type: "radio",
           options: [
             { value: "fully", label: "Fully future-proofed" },
@@ -273,9 +307,8 @@ function getQuestionsForSection(section: ChatSection) {
   }
 }
 
-// Helper function to render different input types
 function renderQuestionInput(
-  question: any, 
+  question: Question, 
   value: any, 
   onChange: (value: any) => void
 ) {
@@ -373,7 +406,6 @@ function renderQuestionInput(
   }
 }
 
-// Format values (e.g., budget as currency)
 function formatValue(value: number, id: string) {
   if (id === "budget") {
     return `$${value.toLocaleString()}`;
@@ -384,7 +416,6 @@ function formatValue(value: number, id: string) {
   return value;
 }
 
-// Get section title
 function getSectionTitle(section: ChatSection) {
   switch (section) {
     case "basic-questions":

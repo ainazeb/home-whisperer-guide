@@ -1,9 +1,10 @@
 
 import React from "react";
-import { ChevronLeft, Play } from "lucide-react";
+import { ChevronLeft, Play, ThumbsUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatSection } from "@/components/ChatbotInterface";
+import { useToast } from "@/hooks/use-toast";
 
 interface ResultsPanelProps {
   section: ChatSection;
@@ -12,8 +13,18 @@ interface ResultsPanelProps {
 }
 
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack }) => {
+  const { toast } = useToast();
+  
   // Get result content based on section and answers
   const { title, summary, recommendation } = getResultContent(section, answers);
+  
+  const handleGetRecommendation = () => {
+    toast({
+      title: "Generating comprehensive recommendation...",
+      description: "Analyzing all your preferences across categories to find your ideal match.",
+      duration: 3000,
+    });
+  };
   
   return (
     <div className="space-y-6">
@@ -121,9 +132,18 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
         <Button variant="outline" onClick={onBack}>
           Modify Your Answers
         </Button>
-        <Button>
-          Save Results
-        </Button>
+        <div className="space-x-4">
+          <Button variant="secondary">
+            Save Results
+          </Button>
+          <Button 
+            onClick={handleGetRecommendation}
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+          >
+            <ThumbsUp className="mr-2 h-5 w-5" /> 
+            Get Full Recommendation
+          </Button>
+        </div>
       </div>
     </div>
   );
