@@ -1,10 +1,11 @@
 
-import React from "react";
-import { ChevronLeft, Play, ThumbsUp } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronLeft, Play, ThumbsUp, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatSection } from "@/components/ChatbotInterface";
 import { useToast } from "@/hooks/use-toast";
+import { Progress } from "@/components/ui/progress";
 
 interface ResultsPanelProps {
   section: ChatSection;
@@ -14,6 +15,9 @@ interface ResultsPanelProps {
 
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack }) => {
   const { toast } = useToast();
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [areaExpanded, setAreaExpanded] = useState<string | null>(null);
   
   // Get result content based on section and answers
   const { title, summary, recommendation } = getResultContent(section, answers);
@@ -26,12 +30,44 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
     });
   };
   
+  const handleSaveResults = () => {
+    toast({
+      title: "Results saved successfully!",
+      description: "Your preferences and results have been saved to your account.",
+      duration: 3000,
+    });
+  };
+  
+  const toggleAudioPlay = () => {
+    setIsPlaying(!isPlaying);
+    
+    // Simulate audio playback with progress
+    if (!isPlaying) {
+      let progress = 0;
+      const interval = setInterval(() => {
+        progress += 1;
+        setAudioProgress(progress);
+        if (progress >= 100) {
+          setIsPlaying(false);
+          clearInterval(interval);
+          setAudioProgress(0);
+        }
+      }, 100);
+    } else {
+      setAudioProgress(0);
+    }
+  };
+  
+  const handleAreaClick = (areaId: string) => {
+    setAreaExpanded(areaExpanded === areaId ? null : areaId);
+  };
+  
   return (
     <div className="space-y-6">
       <div className="flex items-center mb-6">
         <Button variant="ghost" onClick={onBack} className="mr-2">
           <ChevronLeft className="h-5 w-5" />
-          Back
+          Back to Menu
         </Button>
         <h2 className="text-xl font-semibold flex-1 text-center">
           Your Results
@@ -47,25 +83,40 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Map Visualization */}
-        <Card>
+        <Card className={`overflow-hidden transition-all duration-300 ${areaExpanded === 'map' ? 'md:col-span-2' : ''}`}>
           <CardContent className="p-0 overflow-hidden rounded-lg">
-            <div className="h-64 bg-blue-100 flex items-center justify-center">
+            <div 
+              className={`${areaExpanded === 'map' ? 'h-96' : 'h-64'} bg-blue-100 flex items-center justify-center relative cursor-pointer`} 
+              onClick={() => handleAreaClick('map')}
+            >
               <div className="text-center p-4">
                 <h3 className="text-lg font-medium mb-2">Area Map</h3>
                 <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  {/* Placeholder for map */}
                   <div className="text-4xl mb-2">🗺️</div>
-                  <p className="text-sm text-blue-700">Interactive map visualization</p>
+                  <p className="text-sm text-blue-700">
+                    {areaExpanded === 'map' 
+                      ? 'Interactive map showing recommended areas based on your criteria' 
+                      : 'Click to expand map view'}
+                  </p>
                 </div>
+                {areaExpanded === 'map' && (
+                  <div className="mt-4">
+                    <Button size="sm" variant="outline" className="text-xs">Zoom In</Button>
+                    <Button size="sm" variant="outline" className="text-xs ml-2">View Details</Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
         
         {/* Area Images */}
-        <Card>
+        <Card className={`overflow-hidden transition-all duration-300 ${areaExpanded === 'preview' ? 'md:col-span-2' : ''}`}>
           <CardContent className="p-0 overflow-hidden rounded-lg">
-            <div className="h-64 bg-green-100 flex items-center justify-center">
+            <div 
+              className={`${areaExpanded === 'preview' ? 'h-96' : 'h-64'} bg-green-100 flex items-center justify-center relative cursor-pointer`}
+              onClick={() => handleAreaClick('preview')}
+            >
               <div className="text-center p-4">
                 <h3 className="text-lg font-medium mb-2">Area Preview</h3>
                 <div className="grid grid-cols-2 gap-2">
@@ -82,6 +133,12 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
                     <div className="text-4xl">🛣️</div>
                   </div>
                 </div>
+                {areaExpanded === 'preview' && (
+                  <div className="mt-4">
+                    <Button size="sm" variant="outline" className="text-xs">View Gallery</Button>
+                    <Button size="sm" variant="outline" className="text-xs ml-2">Street View</Button>
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>
@@ -90,13 +147,48 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Data Chart */}
-        <Card className="md:col-span-2">
+        <Card className={`md:col-span-2 transition-all duration-300 ${areaExpanded === 'chart' ? 'md:col-span-3' : ''}`}>
           <CardContent className="p-4">
-            <h3 className="text-lg font-medium mb-4">Data Insights</h3>
-            <div className="h-48 bg-purple-50 rounded-lg border border-purple-100 flex items-center justify-center">
+            <h3 className="text-lg font-medium mb-4 cursor-pointer" onClick={() => handleAreaClick('chart')}>
+              Data Insights {areaExpanded === 'chart' ? '(Click to Collapse)' : '(Click to Expand)'}
+            </h3>
+            <div className={`${areaExpanded === 'chart' ? 'h-80' : 'h-48'} bg-purple-50 rounded-lg border border-purple-100 flex items-center justify-center transition-all duration-300`}>
               <div className="text-center">
-                <div className="text-4xl mb-2">📊</div>
-                <p className="text-sm text-purple-700">Data visualization chart</p>
+                {areaExpanded === 'chart' ? (
+                  <div className="w-full p-4">
+                    <h4 className="text-sm font-medium mb-2">Comparison of Areas Based on Your Preferences</h4>
+                    <div className="flex items-end justify-center space-x-4 h-40">
+                      <div className="flex flex-col items-center">
+                        <div className="h-24 w-12 bg-blue-400 rounded-t-lg"></div>
+                        <p className="text-xs mt-1">Downtown</p>
+                        <p className="text-xs text-blue-700">82%</p>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="h-32 w-12 bg-green-400 rounded-t-lg"></div>
+                        <p className="text-xs mt-1">Westside</p>
+                        <p className="text-xs text-green-700">93%</p>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="h-20 w-12 bg-amber-400 rounded-t-lg"></div>
+                        <p className="text-xs mt-1">Eastside</p>
+                        <p className="text-xs text-amber-700">76%</p>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div className="h-16 w-12 bg-purple-400 rounded-t-lg"></div>
+                        <p className="text-xs mt-1">Suburbs</p>
+                        <p className="text-xs text-purple-700">68%</p>
+                      </div>
+                    </div>
+                    <div className="mt-4">
+                      <Button size="sm" variant="outline">View Detailed Comparison</Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="text-4xl mb-2">📊</div>
+                    <p className="text-sm text-purple-700">Click to view data visualization chart</p>
+                  </>
+                )}
               </div>
             </div>
           </CardContent>
@@ -109,8 +201,21 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
             <div className="h-48 bg-amber-50 rounded-lg border border-amber-100 flex flex-col items-center justify-center p-4">
               <div className="text-4xl mb-4">🎧</div>
               <p className="text-sm text-amber-700 mb-4">Listen to our AI narration</p>
-              <Button className="gap-2">
-                <Play className="h-4 w-4" /> Play Audio
+              {isPlaying && (
+                <div className="w-full mb-4">
+                  <Progress value={audioProgress} className="h-2" />
+                </div>
+              )}
+              <Button className="gap-2" onClick={toggleAudioPlay}>
+                {isPlaying ? (
+                  <>
+                    <Pause className="h-4 w-4" /> Pause Audio
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-4 w-4" /> Play Audio
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -133,7 +238,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
           Modify Your Answers
         </Button>
         <div className="space-x-4">
-          <Button variant="secondary">
+          <Button variant="secondary" onClick={handleSaveResults}>
             Save Results
           </Button>
           <Button 

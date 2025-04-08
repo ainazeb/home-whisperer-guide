@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import React, { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
@@ -48,10 +49,24 @@ type Question = SliderQuestion | SelectQuestion | CheckboxQuestion | RadioQuesti
 const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack, onSubmit }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [isReturningToMenu, setIsReturningToMenu] = useState(false);
 
   const questions = getQuestionsForSection(section);
   
   const progress = ((currentStep + 1) / questions.length) * 100;
+  
+  // Initialize default values for questions
+  useEffect(() => {
+    const initialAnswers: Record<string, any> = {};
+    questions.forEach(question => {
+      if (question.type === "slider") {
+        initialAnswers[question.id] = question.defaultValue;
+      } else if (question.type === "checkbox") {
+        initialAnswers[question.id] = [];
+      }
+    });
+    setAnswers(prevAnswers => ({...prevAnswers, ...initialAnswers}));
+  }, [section]);
   
   const handleNext = () => {
     if (currentStep < questions.length - 1) {
@@ -65,8 +80,14 @@ const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     } else {
+      setIsReturningToMenu(true);
       onBack();
     }
+  };
+
+  const handleBackToMenu = () => {
+    setIsReturningToMenu(true);
+    onBack();
   };
   
   const handleAnswerChange = (value: any) => {
@@ -77,17 +98,23 @@ const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack
   };
   
   const currentQuestion = questions[currentStep];
+  const questionHasAnswer = answers[currentQuestion.id] !== undefined && 
+    (Array.isArray(answers[currentQuestion.id]) ? answers[currentQuestion.id].length > 0 : true);
 
   return (
     <div className="space-y-6">
       <div className="flex items-center mb-6">
         <Button variant="ghost" onClick={handlePrevious} className="mr-2">
           <ChevronLeft className="h-5 w-5" />
-          Back
+          {currentStep > 0 ? 'Back' : 'Back to Menu'}
         </Button>
         <h2 className="text-xl font-semibold flex-1 text-center">
           {getSectionTitle(section)}
         </h2>
+        <Button variant="ghost" onClick={handleBackToMenu} className="mr-2">
+          <ArrowLeft className="h-5 w-5 mr-1" />
+          Main Menu
+        </Button>
       </div>
       
       <Progress value={progress} className="mb-8" />
@@ -105,7 +132,7 @@ const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack
         </div>
         
         <div className="flex justify-end mt-8">
-          <Button onClick={handleNext} disabled={!answers[currentQuestion.id]}>
+          <Button onClick={handleNext} disabled={!questionHasAnswer}>
             {currentStep === questions.length - 1 ? 'See Results' : 'Next'}
             <ChevronRight className="ml-2 h-5 w-5" />
           </Button>

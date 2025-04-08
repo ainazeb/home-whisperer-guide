@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import MainMenu from "@/components/chatbot/MainMenu";
 import QuestionnairePanel from "@/components/chatbot/QuestionnairePanel";
 import ResultsPanel from "@/components/chatbot/ResultsPanel";
+import { useToast } from "@/hooks/use-toast";
 
 interface ChatbotInterfaceProps {
   onClose: () => void;
@@ -23,6 +24,7 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
   const [currentSection, setCurrentSection] = useState<ChatSection>("main");
   const [showResults, setShowResults] = useState(false);
   const [answers, setAnswers] = useState<Record<string, any>>({});
+  const { toast } = useToast();
 
   const handleSectionSelect = (section: ChatSection) => {
     setCurrentSection(section);
@@ -32,11 +34,23 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
   const handleBackToMenu = () => {
     setCurrentSection("main");
     setShowResults(false);
+    
+    toast({
+      title: "Returning to main menu",
+      description: "Your progress has been saved.",
+      duration: 2000,
+    });
   };
 
   const handleSubmitAnswers = (sectionAnswers: Record<string, any>) => {
     setAnswers({ ...answers, ...sectionAnswers });
     setShowResults(true);
+    
+    toast({
+      title: "Generating results",
+      description: "Analyzing your preferences...",
+      duration: 2000,
+    });
   };
 
   return (
