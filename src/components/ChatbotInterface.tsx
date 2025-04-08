@@ -29,6 +29,12 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
   const handleSectionSelect = (section: ChatSection) => {
     setCurrentSection(section);
     setShowResults(false);
+    
+    toast({
+      title: "Section selected",
+      description: `Loading the ${sectionToDisplayName(section)} questionnaire.`,
+      duration: 2000,
+    });
   };
 
   const handleBackToMenu = () => {
@@ -52,13 +58,25 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
       duration: 2000,
     });
   };
+  
+  // Helper function to convert section IDs to display names
+  const sectionToDisplayName = (section: ChatSection): string => {
+    switch (section) {
+      case "basic-questions": return "Basic Questions";
+      case "demographics": return "Demographics";
+      case "construction": return "Development & Construction";
+      case "transportation": return "Transportation";
+      case "smart-home": return "Smart Home";
+      default: return "Main Menu";
+    }
+  };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <Card className="w-full max-w-4xl h-[80vh] relative overflow-hidden flex flex-col shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-fade-in">
+      <Card className="w-full max-w-4xl h-[80vh] relative overflow-hidden flex flex-col shadow-xl animate-scale-in">
         <Button 
           variant="ghost" 
-          className="absolute top-2 right-2 rounded-full p-2" 
+          className="absolute top-2 right-2 rounded-full p-2 hover:bg-gray-100 transition-colors" 
           onClick={onClose}
         >
           <X className="h-6 w-6" />

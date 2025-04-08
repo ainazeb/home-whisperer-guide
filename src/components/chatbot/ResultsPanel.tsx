@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ChatSection } from "@/components/ChatbotInterface";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import FullRecommendationPanel from "./FullRecommendationPanel";
 
 interface ResultsPanelProps {
   section: ChatSection;
@@ -18,6 +19,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const [areaExpanded, setAreaExpanded] = useState<string | null>(null);
+  const [showFullRecommendation, setShowFullRecommendation] = useState(false);
   
   // Get result content based on section and answers
   const { title, summary, recommendation } = getResultContent(section, answers);
@@ -28,6 +30,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       description: "Analyzing all your preferences across categories to find your ideal match.",
       duration: 3000,
     });
+    setShowFullRecommendation(true);
   };
   
   const handleSaveResults = () => {
@@ -51,16 +54,40 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
           setIsPlaying(false);
           clearInterval(interval);
           setAudioProgress(0);
+          
+          toast({
+            title: "Audio summary completed",
+            description: "The full audio summary has finished playing.",
+            duration: 2000,
+          });
         }
       }, 100);
     } else {
       setAudioProgress(0);
+      
+      toast({
+        title: "Audio paused",
+        description: "You can resume the audio summary at any time.",
+        duration: 2000,
+      });
     }
   };
   
   const handleAreaClick = (areaId: string) => {
     setAreaExpanded(areaExpanded === areaId ? null : areaId);
+    
+    if (areaExpanded !== areaId) {
+      toast({
+        title: areaId === 'map' ? "Map view expanded" : areaId === 'preview' ? "Area preview expanded" : "Data insights expanded",
+        description: "Click again to collapse this section.",
+        duration: 2000,
+      });
+    }
   };
+  
+  if (showFullRecommendation) {
+    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} />;
+  }
   
   return (
     <div className="space-y-6">
@@ -83,16 +110,16 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Map Visualization */}
-        <Card className={`overflow-hidden transition-all duration-300 ${areaExpanded === 'map' ? 'md:col-span-2' : ''}`}>
+        <Card className={`overflow-hidden transition-all duration-500 ${areaExpanded === 'map' ? 'md:col-span-2' : ''}`}>
           <CardContent className="p-0 overflow-hidden rounded-lg">
             <div 
-              className={`${areaExpanded === 'map' ? 'h-96' : 'h-64'} bg-blue-100 flex items-center justify-center relative cursor-pointer`} 
+              className={`${areaExpanded === 'map' ? 'h-96' : 'h-64'} bg-blue-100 flex items-center justify-center relative cursor-pointer transition-all duration-500`} 
               onClick={() => handleAreaClick('map')}
             >
               <div className="text-center p-4">
                 <h3 className="text-lg font-medium mb-2">Area Map</h3>
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                  <div className="text-4xl mb-2">🗺️</div>
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
+                  <div className="text-4xl mb-2 animate-bounce">🗺️</div>
                   <p className="text-sm text-blue-700">
                     {areaExpanded === 'map' 
                       ? 'Interactive map showing recommended areas based on your criteria' 
@@ -100,9 +127,9 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
                   </p>
                 </div>
                 {areaExpanded === 'map' && (
-                  <div className="mt-4">
-                    <Button size="sm" variant="outline" className="text-xs">Zoom In</Button>
-                    <Button size="sm" variant="outline" className="text-xs ml-2">View Details</Button>
+                  <div className="mt-4 animate-fade-in">
+                    <Button size="sm" variant="outline" className="text-xs" onClick={(e) => e.stopPropagation()}>Zoom In</Button>
+                    <Button size="sm" variant="outline" className="text-xs ml-2" onClick={(e) => e.stopPropagation()}>View Details</Button>
                   </div>
                 )}
               </div>
@@ -111,32 +138,32 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
         </Card>
         
         {/* Area Images */}
-        <Card className={`overflow-hidden transition-all duration-300 ${areaExpanded === 'preview' ? 'md:col-span-2' : ''}`}>
+        <Card className={`overflow-hidden transition-all duration-500 ${areaExpanded === 'preview' ? 'md:col-span-2' : ''}`}>
           <CardContent className="p-0 overflow-hidden rounded-lg">
             <div 
-              className={`${areaExpanded === 'preview' ? 'h-96' : 'h-64'} bg-green-100 flex items-center justify-center relative cursor-pointer`}
+              className={`${areaExpanded === 'preview' ? 'h-96' : 'h-64'} bg-green-100 flex items-center justify-center relative cursor-pointer transition-all duration-500`}
               onClick={() => handleAreaClick('preview')}
             >
               <div className="text-center p-4">
                 <h3 className="text-lg font-medium mb-2">Area Preview</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 flex items-center justify-center">
-                    <div className="text-4xl">🏘️</div>
+                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
+                    <div className="text-4xl animate-pulse">🏘️</div>
                   </div>
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 flex items-center justify-center">
-                    <div className="text-4xl">🌳</div>
+                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
+                    <div className="text-4xl animate-pulse">🌳</div>
                   </div>
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 flex items-center justify-center">
-                    <div className="text-4xl">🏢</div>
+                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
+                    <div className="text-4xl animate-pulse">🏢</div>
                   </div>
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 flex items-center justify-center">
-                    <div className="text-4xl">🛣️</div>
+                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
+                    <div className="text-4xl animate-pulse">🛣️</div>
                   </div>
                 </div>
                 {areaExpanded === 'preview' && (
-                  <div className="mt-4">
-                    <Button size="sm" variant="outline" className="text-xs">View Gallery</Button>
-                    <Button size="sm" variant="outline" className="text-xs ml-2">Street View</Button>
+                  <div className="mt-4 animate-fade-in">
+                    <Button size="sm" variant="outline" className="text-xs" onClick={(e) => e.stopPropagation()}>View Gallery</Button>
+                    <Button size="sm" variant="outline" className="text-xs ml-2" onClick={(e) => e.stopPropagation()}>Street View</Button>
                   </div>
                 )}
               </div>
@@ -147,45 +174,59 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Data Chart */}
-        <Card className={`md:col-span-2 transition-all duration-300 ${areaExpanded === 'chart' ? 'md:col-span-3' : ''}`}>
+        <Card className={`md:col-span-2 transition-all duration-500 ${areaExpanded === 'chart' ? 'md:col-span-3' : ''}`}>
           <CardContent className="p-4">
-            <h3 className="text-lg font-medium mb-4 cursor-pointer" onClick={() => handleAreaClick('chart')}>
+            <h3 className="text-lg font-medium mb-4 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleAreaClick('chart')}>
               Data Insights {areaExpanded === 'chart' ? '(Click to Collapse)' : '(Click to Expand)'}
             </h3>
-            <div className={`${areaExpanded === 'chart' ? 'h-80' : 'h-48'} bg-purple-50 rounded-lg border border-purple-100 flex items-center justify-center transition-all duration-300`}>
+            <div className={`${areaExpanded === 'chart' ? 'h-80' : 'h-48'} bg-purple-50 rounded-lg border border-purple-100 flex items-center justify-center transition-all duration-500`}
+                onClick={() => handleAreaClick('chart')}>
               <div className="text-center">
                 {areaExpanded === 'chart' ? (
-                  <div className="w-full p-4">
+                  <div className="w-full p-4 animate-fade-in">
                     <h4 className="text-sm font-medium mb-2">Comparison of Areas Based on Your Preferences</h4>
                     <div className="flex items-end justify-center space-x-4 h-40">
-                      <div className="flex flex-col items-center">
-                        <div className="h-24 w-12 bg-blue-400 rounded-t-lg"></div>
+                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.1s" }}>
+                        <div className="h-24 w-12 bg-blue-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-blue-500"></div>
                         <p className="text-xs mt-1">Downtown</p>
                         <p className="text-xs text-blue-700">82%</p>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <div className="h-32 w-12 bg-green-400 rounded-t-lg"></div>
+                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.2s" }}>
+                        <div className="h-32 w-12 bg-green-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-green-500"></div>
                         <p className="text-xs mt-1">Westside</p>
                         <p className="text-xs text-green-700">93%</p>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <div className="h-20 w-12 bg-amber-400 rounded-t-lg"></div>
+                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
+                        <div className="h-20 w-12 bg-amber-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-amber-500"></div>
                         <p className="text-xs mt-1">Eastside</p>
                         <p className="text-xs text-amber-700">76%</p>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <div className="h-16 w-12 bg-purple-400 rounded-t-lg"></div>
+                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.4s" }}>
+                        <div className="h-16 w-12 bg-purple-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-purple-500"></div>
                         <p className="text-xs mt-1">Suburbs</p>
                         <p className="text-xs text-purple-700">68%</p>
                       </div>
                     </div>
                     <div className="mt-4">
-                      <Button size="sm" variant="outline">View Detailed Comparison</Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toast({
+                            title: "Loading detailed comparison",
+                            description: "Please wait while we prepare your detailed area comparison.",
+                            duration: 2000,
+                          });
+                        }}
+                      >
+                        View Detailed Comparison
+                      </Button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <div className="text-4xl mb-2">📊</div>
+                    <div className="text-4xl mb-2 animate-pulse">📊</div>
                     <p className="text-sm text-purple-700">Click to view data visualization chart</p>
                   </>
                 )}
@@ -199,14 +240,20 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
           <CardContent className="p-4">
             <h3 className="text-lg font-medium mb-4">Audio Summary</h3>
             <div className="h-48 bg-amber-50 rounded-lg border border-amber-100 flex flex-col items-center justify-center p-4">
-              <div className="text-4xl mb-4">🎧</div>
+              <div className={`text-4xl mb-4 ${isPlaying ? 'animate-pulse' : ''}`}>🎧</div>
               <p className="text-sm text-amber-700 mb-4">Listen to our AI narration</p>
               {isPlaying && (
                 <div className="w-full mb-4">
                   <Progress value={audioProgress} className="h-2" />
                 </div>
               )}
-              <Button className="gap-2" onClick={toggleAudioPlay}>
+              <Button 
+                className="gap-2 hover:bg-amber-600 transition-colors" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  toggleAudioPlay();
+                }}
+              >
                 {isPlaying ? (
                   <>
                     <Pause className="h-4 w-4" /> Pause Audio
@@ -238,12 +285,16 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
           Modify Your Answers
         </Button>
         <div className="space-x-4">
-          <Button variant="secondary" onClick={handleSaveResults}>
+          <Button 
+            variant="secondary" 
+            onClick={handleSaveResults}
+            className="hover:bg-gray-200 transition-colors"
+          >
             Save Results
           </Button>
           <Button 
             onClick={handleGetRecommendation}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
+            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 transition-colors transform hover:scale-105"
           >
             <ThumbsUp className="mr-2 h-5 w-5" /> 
             Get Full Recommendation
