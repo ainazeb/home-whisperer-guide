@@ -1,16 +1,15 @@
-
 import { useState, useEffect } from "react";
 import WelcomeModal from "@/components/WelcomeModal";
 import ChatbotInterface from "@/components/ChatbotInterface";
 import FloatingChatButton from "@/components/FloatingChatButton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Home, Users, Building2, Train, Laptop } from "lucide-react";
+import { Home, Users, Building2, Train, Laptop, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [showWelcomeModal, setShowWelcomeModal] = useState(true);
   const [showChatbot, setShowChatbot] = useState(false);
   
-  // Show welcome modal on first page load
   useEffect(() => {
     const hasSeenWelcome = localStorage.getItem("hasSeenWelcome");
     if (hasSeenWelcome) {
@@ -38,10 +37,8 @@ const Index = () => {
         </p>
       </header>
       
-      {/* Welcome Modal */}
       {showWelcomeModal && <WelcomeModal onStart={handleStartChat} />}
       
-      {/* Main Content */}
       <div className="max-w-6xl w-full mb-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <Card className="overflow-hidden border-2 border-blue-200 shadow-md">
@@ -144,10 +141,8 @@ const Index = () => {
         </Card>
       </div>
       
-      {/* Chatbot Interface */}
       {showChatbot && <ChatbotInterface onClose={toggleChatbot} />}
       
-      {/* Floating Chat Button */}
       {!showChatbot && <FloatingChatButton onClick={toggleChatbot} />}
     </div>
   );
