@@ -1,6 +1,5 @@
-
 import React, { useState } from "react";
-import { ChevronLeft, Play, ThumbsUp, Pause } from "lucide-react";
+import { ChevronLeft, Play, ThumbsUp, Pause, MapPin, Building2, Train, Home, Park } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatSection } from "@/components/ChatbotInterface";
@@ -14,6 +13,121 @@ interface ResultsPanelProps {
   onBack: () => void;
 }
 
+const getResultContent = (section: ChatSection, answers: Record<string, any>) => {
+  const areas = [
+    {
+      name: "Downtown District",
+      score: 93,
+      description: "A vibrant urban center with excellent amenities",
+      highlights: ["Walk Score: 95/100", "Transit Score: 98/100", "Modern condos & apartments", "Cultural hotspots"],
+      keyFeatures: {
+        lifestyle: 90,
+        amenities: 95,
+        transport: 98,
+        safety: 85,
+        value: 82
+      }
+    },
+    {
+      name: "Westside Village",
+      score: 88,
+      description: "Family-friendly neighborhood with great schools",
+      highlights: ["School Rating: 9/10", "Park Access: 92/100", "Family-oriented", "Quiet streets"],
+      keyFeatures: {
+        lifestyle: 85,
+        amenities: 80,
+        transport: 75,
+        safety: 95,
+        value: 88
+      }
+    },
+    {
+      name: "Tech Valley",
+      score: 86,
+      description: "Modern development with smart infrastructure",
+      highlights: ["Innovation Hub", "Smart Home Ready", "Modern Architecture", "Green Buildings"],
+      keyFeatures: {
+        lifestyle: 88,
+        amenities: 85,
+        transport: 82,
+        safety: 90,
+        value: 84
+      }
+    },
+    {
+      name: "Heritage District",
+      score: 84,
+      description: "Historic charm meets modern convenience",
+      highlights: ["Historic Buildings", "Artisan Shops", "Cultural Events", "Community Feel"],
+      keyFeatures: {
+        lifestyle: 92,
+        amenities: 78,
+        transport: 85,
+        safety: 88,
+        value: 80
+      }
+    },
+    {
+      name: "Green Haven",
+      score: 82,
+      description: "Eco-friendly community with abundant nature",
+      highlights: ["Green Spaces", "Sustainable Living", "Nature Trails", "Community Gardens"],
+      keyFeatures: {
+        lifestyle: 86,
+        amenities: 75,
+        transport: 70,
+        safety: 92,
+        value: 90
+      }
+    }
+  ];
+
+  switch (section) {
+    case "basic-questions":
+      return {
+        title: "Your Ideal Home Profile",
+        summary: `Based on our analysis of your preferences and ${areas.length} distinct neighborhoods, we've identified several excellent matches. Your budget of ${formatCurrency(answers.budget)} and lifestyle preferences align particularly well with ${areas[0].name} and ${areas[1].name}, offering an optimal balance of amenities and value.`,
+        recommendation: `Primary Recommendation: ${areas[0].name} (${areas[0].score}% match)\n${areas[0].description}. Key highlights include ${areas[0].highlights.join(", ")}.\n\nAlternative Options:\n${areas.slice(1).map(area => `- ${area.name} (${area.score}% match): ${area.description}`).join("\n")}`,
+        areas: areas
+      };
+      
+    case "demographics":
+      return {
+        title: "Neighborhood Demographics",
+        summary: `You're interested in areas with ${formatDemographics(answers.ageGroups)} and prefer neighborhoods with ${formatHouseholdType(answers.householdType)}. The demographic projections are ${formatImportance(answers.futureProjections)} to you.`,
+        recommendation: "Based on your preferences, the Riverdale district would be an excellent match. It has a growing population of your preferred demographic groups and is projected to maintain this trend over the next 20 years according to city planning data."
+      };
+      
+    case "construction":
+      return {
+        title: "Development & Green Space",
+        summary: `Access to green spaces is ${formatImportance(answers.greenSpace)} for you, and you want to be near amenities like ${formatAmenities(answers.amenities)}. You've indicated that you're ${formatDevelopmentComfort(answers.development)} with ongoing construction.`,
+        recommendation: "The Westgate area matches your preferences well. It has extensive parks and green spaces, while also featuring your desired amenities. The area has a moderate amount of planned development that shouldn't be disruptive based on your comfort level with construction."
+      };
+      
+    case "transportation":
+      return {
+        title: "Mobility & Transportation",
+        summary: `You need access to ${formatTransportation(answers.transportTypes)} and prefer a maximum commute time of ${answers.commuteTime} minutes. Future transportation improvements are ${formatTransportImportance(answers.futureTransport)} to you.`,
+        recommendation: "The Oakridge neighborhood offers excellent transportation options matching your preferences. The area is well-connected with your preferred transit types and has several planned improvements that will further enhance mobility in the coming years."
+      };
+      
+    case "smart-home":
+      return {
+        title: "Smart Home Technology Profile",
+        summary: `You're interested in smart home features like ${formatSmartFeatures(answers.smartFeatures)} and rate the importance of smart technology as ${formatImportance(answers.smartImportance)}. You want a home that's ${formatFutureProof(answers.futureProof)} for future technology.`,
+        recommendation: "The newly developed TechRidge properties would be perfect for your smart home preferences. These homes come with many of your desired features pre-installed and have infrastructure ready for future upgrades. The neighborhood also has advanced fiber connectivity and smart city initiatives."
+      };
+      
+    default:
+      return {
+        title: "Your Results",
+        summary: "Thank you for sharing your preferences with us.",
+        recommendation: "Based on your selections, we've compiled some initial recommendations. For more detailed insights, please contact our specialists."
+      };
+  };
+};
+
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack }) => {
   const { toast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -21,8 +135,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   const [areaExpanded, setAreaExpanded] = useState<string | null>(null);
   const [showFullRecommendation, setShowFullRecommendation] = useState(false);
   
-  // Get result content based on section and answers
-  const { title, summary, recommendation } = getResultContent(section, answers);
+  const { title, summary, recommendation, areas } = getResultContent(section, answers);
   
   const handleGetRecommendation = () => {
     toast({
@@ -44,7 +157,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   const toggleAudioPlay = () => {
     setIsPlaying(!isPlaying);
     
-    // Simulate audio playback with progress
     if (!isPlaying) {
       let progress = 0;
       const interval = setInterval(() => {
@@ -86,7 +198,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   };
   
   if (showFullRecommendation) {
-    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} />;
+    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} areas={areas} />;
   }
   
   return (
@@ -109,7 +221,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Map Visualization */}
         <Card className={`overflow-hidden transition-all duration-500 ${areaExpanded === 'map' ? 'md:col-span-2' : ''}`}>
           <CardContent className="p-0 overflow-hidden rounded-lg">
             <div 
@@ -117,27 +228,30 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
               onClick={() => handleAreaClick('map')}
             >
               <div className="text-center p-4">
-                <h3 className="text-lg font-medium mb-2">Area Map</h3>
-                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
-                  <div className="text-4xl mb-2 animate-bounce">🗺️</div>
-                  <p className="text-sm text-blue-700">
-                    {areaExpanded === 'map' 
-                      ? 'Interactive map showing recommended areas based on your criteria' 
-                      : 'Click to expand map view'}
-                  </p>
+                <h3 className="text-lg font-medium mb-2 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 mr-2" />
+                  Area Map
+                </h3>
+                <div className="grid grid-cols-1 gap-4">
+                  {areaExpanded === 'map' ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 animate-fade-in">
+                      {areas.map((area, index) => (
+                        <div key={area.name} className="bg-blue-50 p-3 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
+                          <div className="text-2xl mb-2">{index === 0 ? '🌟' : '📍'}</div>
+                          <p className="text-sm font-medium text-blue-700">{area.name}</p>
+                          <p className="text-xs text-blue-600">{area.score}% Match</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-4xl mb-2 animate-bounce">🗺️</div>
+                  )}
                 </div>
-                {areaExpanded === 'map' && (
-                  <div className="mt-4 animate-fade-in">
-                    <Button size="sm" variant="outline" className="text-xs" onClick={(e) => e.stopPropagation()}>Zoom In</Button>
-                    <Button size="sm" variant="outline" className="text-xs ml-2" onClick={(e) => e.stopPropagation()}>View Details</Button>
-                  </div>
-                )}
               </div>
             </div>
           </CardContent>
         </Card>
         
-        {/* Area Images */}
         <Card className={`overflow-hidden transition-all duration-500 ${areaExpanded === 'preview' ? 'md:col-span-2' : ''}`}>
           <CardContent className="p-0 overflow-hidden rounded-lg">
             <div 
@@ -173,61 +287,41 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Data Chart */}
         <Card className={`md:col-span-2 transition-all duration-500 ${areaExpanded === 'chart' ? 'md:col-span-3' : ''}`}>
           <CardContent className="p-4">
             <h3 className="text-lg font-medium mb-4 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleAreaClick('chart')}>
-              Data Insights {areaExpanded === 'chart' ? '(Click to Collapse)' : '(Click to Expand)'}
+              Area Comparison {areaExpanded === 'chart' ? '(Click to Collapse)' : '(Click to Expand)'}
             </h3>
-            <div className={`${areaExpanded === 'chart' ? 'h-80' : 'h-48'} bg-purple-50 rounded-lg border border-purple-100 flex items-center justify-center transition-all duration-500`}
+            <div className={`${areaExpanded === 'chart' ? 'h-96' : 'h-48'} bg-purple-50 rounded-lg border border-purple-100 flex items-center justify-center transition-all duration-500`}
                 onClick={() => handleAreaClick('chart')}>
-              <div className="text-center">
+              <div className="text-center w-full p-4">
                 {areaExpanded === 'chart' ? (
-                  <div className="w-full p-4 animate-fade-in">
-                    <h4 className="text-sm font-medium mb-2">Comparison of Areas Based on Your Preferences</h4>
-                    <div className="flex items-end justify-center space-x-4 h-40">
-                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                        <div className="h-24 w-12 bg-blue-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-blue-500"></div>
-                        <p className="text-xs mt-1">Downtown</p>
-                        <p className="text-xs text-blue-700">82%</p>
-                      </div>
-                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.2s" }}>
-                        <div className="h-32 w-12 bg-green-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-green-500"></div>
-                        <p className="text-xs mt-1">Westside</p>
-                        <p className="text-xs text-green-700">93%</p>
-                      </div>
-                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.3s" }}>
-                        <div className="h-20 w-12 bg-amber-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-amber-500"></div>
-                        <p className="text-xs mt-1">Eastside</p>
-                        <p className="text-xs text-amber-700">76%</p>
-                      </div>
-                      <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: "0.4s" }}>
-                        <div className="h-16 w-12 bg-purple-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-purple-500"></div>
-                        <p className="text-xs mt-1">Suburbs</p>
-                        <p className="text-xs text-purple-700">68%</p>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toast({
-                            title: "Loading detailed comparison",
-                            description: "Please wait while we prepare your detailed area comparison.",
-                            duration: 2000,
-                          });
-                        }}
-                      >
-                        View Detailed Comparison
-                      </Button>
+                  <div className="w-full animate-fade-in">
+                    <h4 className="text-sm font-medium mb-4">Area Comparison Based on Your Preferences</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      {areas.map((area) => (
+                        <div key={area.name} className="flex flex-col items-center">
+                          <div className={`h-${area.score} w-16 bg-blue-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-blue-500`}
+                               style={{ height: `${area.score}px` }}>
+                          </div>
+                          <p className="text-xs mt-1 font-medium">{area.name}</p>
+                          <p className="text-xs text-blue-700">{area.score}%</p>
+                          <div className="mt-2 text-xs text-gray-600">
+                            {area.highlights.slice(0, 2).map((highlight, idx) => (
+                              <div key={idx} className="flex items-center mb-1">
+                                <div className="w-2 h-2 rounded-full bg-blue-400 mr-1"></div>
+                                {highlight}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ) : (
                   <>
                     <div className="text-4xl mb-2 animate-pulse">📊</div>
-                    <p className="text-sm text-purple-700">Click to view data visualization chart</p>
+                    <p className="text-sm text-purple-700">Click to view detailed area comparison</p>
                   </>
                 )}
               </div>
@@ -235,7 +329,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
           </CardContent>
         </Card>
         
-        {/* Audio Summary */}
         <Card>
           <CardContent className="p-4">
             <h3 className="text-lg font-medium mb-4">Audio Summary</h3>
@@ -269,17 +362,44 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
         </Card>
       </div>
       
-      {/* Text Summary */}
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-xl font-medium mb-4">Summary</h3>
-          <p className="mb-4 text-muted-foreground">{summary}</p>
-          <h4 className="font-medium mb-2">Our Recommendation</h4>
-          <p className="text-muted-foreground">{recommendation}</p>
+          <h3 className="text-xl font-medium mb-4">Detailed Analysis</h3>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">{summary}</p>
+            <h4 className="font-medium mb-2">Our Recommendations</h4>
+            <div className="space-y-4">
+              {areas.map((area, index) => (
+                <div key={area.name} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h5 className="font-medium flex items-center">
+                        {index === 0 ? <ThumbsUp className="w-4 h-4 mr-2 text-green-500" /> : 
+                         index === 1 ? <Building2 className="w-4 h-4 mr-2 text-blue-500" /> :
+                         index === 2 ? <Train className="w-4 h-4 mr-2 text-purple-500" /> :
+                         index === 3 ? <Home className="w-4 h-4 mr-2 text-amber-500" /> :
+                         <Park className="w-4 h-4 mr-2 text-green-500" />}
+                        {area.name}
+                      </h5>
+                      <p className="text-sm text-muted-foreground mt-1">{area.description}</p>
+                    </div>
+                    <span className="text-lg font-semibold text-blue-600">{area.score}%</span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    {area.highlights.map((highlight, idx) => (
+                      <div key={idx} className="flex items-center text-sm text-gray-600">
+                        <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
+                        {highlight}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </CardContent>
       </Card>
       
-      {/* Action Buttons */}
       <div className="flex justify-between">
         <Button variant="outline" onClick={onBack}>
           Modify Your Answers
@@ -305,77 +425,29 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   );
 };
 
-// Helper function to generate result content based on section and answers
-function getResultContent(section: ChatSection, answers: Record<string, any>) {
-  switch (section) {
-    case "basic-questions":
-      return {
-        title: "Your Ideal Home Profile",
-        summary: `Based on your budget of ${formatCurrency(answers.budget)} and preference for ${formatLocation(answers.location)}, we've analyzed the best options for you. You're looking for a ${formatBuildingAge(answers.buildingAge)} property with features like ${formatFeatures(answers.features)}.`,
-        recommendation: "We recommend exploring properties in the northern part of the Downtown area, where you'll find the best mix of your desired features within your budget range. These properties typically offer good value retention and match your preference for amenities."
-      };
-      
-    case "demographics":
-      return {
-        title: "Neighborhood Demographics",
-        summary: `You're interested in areas with ${formatDemographics(answers.ageGroups)} and prefer neighborhoods with ${formatHouseholdType(answers.householdType)}. The demographic projections are ${formatImportance(answers.futureProjections)} to you.`,
-        recommendation: "Based on your preferences, the Riverdale district would be an excellent match. It has a growing population of your preferred demographic groups and is projected to maintain this trend over the next 20 years according to city planning data."
-      };
-      
-    case "construction":
-      return {
-        title: "Development & Green Space",
-        summary: `Access to green spaces is ${formatImportance(answers.greenSpace)} for you, and you want to be near amenities like ${formatAmenities(answers.amenities)}. You've indicated that you're ${formatDevelopmentComfort(answers.development)} with ongoing construction.`,
-        recommendation: "The Westgate area matches your preferences well. It has extensive parks and green spaces, while also featuring your desired amenities. The area has a moderate amount of planned development that shouldn't be disruptive based on your comfort level with construction."
-      };
-      
-    case "transportation":
-      return {
-        title: "Mobility & Transportation",
-        summary: `You need access to ${formatTransportation(answers.transportTypes)} and prefer a maximum commute time of ${answers.commuteTime} minutes. Future transportation improvements are ${formatTransportImportance(answers.futureTransport)} to you.`,
-        recommendation: "The Oakridge neighborhood offers excellent transportation options matching your preferences. The area is well-connected with your preferred transit types and has several planned improvements that will further enhance mobility in the coming years."
-      };
-      
-    case "smart-home":
-      return {
-        title: "Smart Home Technology Profile",
-        summary: `You're interested in smart home features like ${formatSmartFeatures(answers.smartFeatures)} and rate the importance of smart technology as ${formatImportance(answers.smartImportance)}. You want a home that's ${formatFutureProof(answers.futureProof)} for future technology.`,
-        recommendation: "The newly developed TechRidge properties would be perfect for your smart home preferences. These homes come with many of your desired features pre-installed and have infrastructure ready for future upgrades. The neighborhood also has advanced fiber connectivity and smart city initiatives."
-      };
-      
-    default:
-      return {
-        title: "Your Results",
-        summary: "Thank you for sharing your preferences with us.",
-        recommendation: "Based on your selections, we've compiled some initial recommendations. For more detailed insights, please contact our specialists."
-      };
-  }
-}
-
-// Helper formatting functions
-function formatCurrency(value: number) {
+const formatCurrency = (value: number) => {
   return value ? `$${value.toLocaleString()}` : "your budget";
-}
+};
 
-function formatLocation(value: string) {
+const formatLocation = (value: string) => {
   switch (value) {
     case "downtown": return "downtown areas";
     case "suburbs": return "suburban communities";
     case "rural": return "rural settings";
     default: return "various locations";
   }
-}
+};
 
-function formatBuildingAge(value: string) {
+const formatBuildingAge = (value: string) => {
   switch (value) {
     case "new": return "newly constructed";
     case "medium": return "moderately aged";
     case "old": return "established, older";
     default: return "";
   }
-}
+};
 
-function formatFeatures(values: string[]) {
+const formatFeatures = (values: string[]) => {
   if (!values || !values.length) return "various amenities";
   
   const featureMap: Record<string, string> = {
@@ -386,9 +458,9 @@ function formatFeatures(values: string[]) {
   };
   
   return values.map(v => featureMap[v] || v).join(", ");
-}
+};
 
-function formatDemographics(values: string[]) {
+const formatDemographics = (values: string[]) => {
   if (!values || !values.length) return "a diverse population";
   
   const demoMap: Record<string, string> = {
@@ -398,9 +470,9 @@ function formatDemographics(values: string[]) {
   };
   
   return values.map(v => demoMap[v] || v).join(", ");
-}
+};
 
-function formatHouseholdType(value: string) {
+const formatHouseholdType = (value: string) => {
   switch (value) {
     case "singles": return "predominantly single residents";
     case "couples": return "couples without children";
@@ -408,9 +480,9 @@ function formatHouseholdType(value: string) {
     case "mixed": return "a mix of different household types";
     default: return "various household compositions";
   }
-}
+};
 
-function formatImportance(value: number) {
+const formatImportance = (value: number) => {
   if (!value) return "somewhat important";
   
   const importanceMap: Record<number, string> = {
@@ -422,9 +494,9 @@ function formatImportance(value: number) {
   };
   
   return importanceMap[value] || "important";
-}
+};
 
-function formatAmenities(values: string[]) {
+const formatAmenities = (values: string[]) => {
   if (!values || !values.length) return "various local amenities";
   
   const amenityMap: Record<string, string> = {
@@ -436,18 +508,18 @@ function formatAmenities(values: string[]) {
   };
   
   return values.map(v => amenityMap[v] || v).join(", ");
-}
+};
 
-function formatDevelopmentComfort(value: string) {
+const formatDevelopmentComfort = (value: string) => {
   switch (value) {
     case "yes": return "comfortable with";
     case "limited": return "accepting of limited";
     case "no": return "not interested in";
     default: return "selective about";
   }
-}
+};
 
-function formatTransportation(values: string[]) {
+const formatTransportation = (values: string[]) => {
   if (!values || !values.length) return "various transportation options";
   
   const transportMap: Record<string, string> = {
@@ -459,18 +531,18 @@ function formatTransportation(values: string[]) {
   };
   
   return values.map(v => transportMap[v] || v).join(", ");
-}
+};
 
-function formatTransportImportance(value: string) {
+const formatTransportImportance = (value: string) => {
   switch (value) {
     case "very": return "very important";
     case "somewhat": return "somewhat important";
     case "not": return "not a priority";
     default: return "a consideration";
   }
-}
+};
 
-function formatSmartFeatures(values: string[]) {
+const formatSmartFeatures = (values: string[]) => {
   if (!values || !values.length) return "various smart technologies";
   
   const featureMap: Record<string, string> = {
@@ -482,15 +554,15 @@ function formatSmartFeatures(values: string[]) {
   };
   
   return values.map(v => featureMap[v] || v).join(", ");
-}
+};
 
-function formatFutureProof(value: string) {
+const formatFutureProof = (value: string) => {
   switch (value) {
     case "fully": return "fully prepared";
     case "partial": return "somewhat ready";
     case "basic": return "equipped with basic capabilities";
     default: return "adaptable";
   }
-}
+};
 
 export default ResultsPanel;
