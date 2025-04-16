@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -20,7 +19,6 @@ export type ChatSection =
   | "transportation" 
   | "smart-home";
 
-// New interface for tracking section completion
 interface SectionProgress {
   completed: boolean;
   answers: Record<string, any>;
@@ -30,6 +28,7 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
   const [currentSection, setCurrentSection] = useState<ChatSection>("main");
   const [showResults, setShowResults] = useState(false);
   const [sectionProgress, setSectionProgress] = useState<Record<ChatSection, SectionProgress>>({
+    "main": { completed: false, answers: {} },
     "basic-questions": { completed: false, answers: {} },
     "demographics": { completed: false, answers: {} },
     "construction": { completed: false, answers: {} },
@@ -38,7 +37,6 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
   });
   const { toast } = useToast();
 
-  // Load saved progress from localStorage
   useEffect(() => {
     const savedProgress = localStorage.getItem('chatbotProgress');
     if (savedProgress) {
@@ -46,7 +44,6 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
     }
   }, []);
 
-  // Save progress to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('chatbotProgress', JSON.stringify(sectionProgress));
   }, [sectionProgress]);
@@ -104,7 +101,6 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
     return Object.values(sectionProgress).filter(section => section.completed).length;
   };
   
-  // Helper function to convert section IDs to display names
   const sectionToDisplayName = (section: ChatSection): string => {
     switch (section) {
       case "basic-questions": return "Basic Questions";

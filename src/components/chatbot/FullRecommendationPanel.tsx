@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { ChevronLeft, MapPin, Home, Users, Building2, Train, Laptop, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,6 +29,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import AIStorytellingSection from "./AIStorytellingSection";
 
 interface FullRecommendationPanelProps {
   answers: Record<string, any>;
@@ -58,12 +58,9 @@ const areaImages = {
 };
 
 const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answers, onBack, areas = [] }) => {
-  // Initialize selectedArea with the first area from the provided areas prop if available
-  // Otherwise default to "westside"
   const initialSelectedArea = areas && areas.length > 0 ? areas[0].name : "westside";
   const [selectedArea, setSelectedArea] = useState<string>(initialSelectedArea);
   
-  // Prepare data for spider chart from the selected area
   const getRadarData = (area: typeof areas[0]) => {
     return [
       { subject: 'Lifestyle', value: area.keyFeatures.lifestyle },
@@ -74,7 +71,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
     ];
   };
   
-  // Spider chart data for area comparison
   const areaComparisonData = [
     {
       subject: 'Price Match',
@@ -118,7 +114,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
     },
   ];
   
-  // Bar chart data for price comparison
   const priceComparisonData = [
     {
       name: 'Studio',
@@ -150,7 +145,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
     },
   ];
   
-  // Area details
   const areaDetails = {
     westside: {
       name: "Westside",
@@ -202,13 +196,10 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
     }
   };
   
-  // Find the selected area in the provided areas array
   const selectedAreaFromProps = areas.find(area => area.name === selectedArea);
   
-  // Helper function to check if selectedArea is from the hardcoded areaDetails or from the props.areas
   const isAreaFromProps = !!selectedAreaFromProps;
   
-  // Helper function to get the appropriate area data
   const getAreaData = () => {
     if (isAreaFromProps && selectedAreaFromProps) {
       return {
@@ -219,9 +210,8 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         recommendationScore: selectedAreaFromProps.score || 0
       };
     } else {
-      // Handle traditional way for the hardcoded areas
       const areaKey = selectedArea as keyof typeof areaDetails;
-      return areaDetails[areaKey] || areaDetails.westside; // Default to westside if not found
+      return areaDetails[areaKey] || areaDetails.westside;
     }
   };
   
@@ -229,7 +219,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
     setSelectedArea(area);
   };
   
-  // Get the current area data based on selection
   const currentAreaData = getAreaData();
   
   return (
@@ -254,7 +243,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         </p>
       </div>
       
-      {/* Top Recommendations Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {areas && areas.length > 0 ? (
           areas.map((area, index) => (
@@ -335,7 +323,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         )}
       </div>
       
-      {/* Top Recommendation */}
       <Card className="overflow-hidden border-2 border-blue-200 mb-8">
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-blue-100">
           <div className="flex justify-between items-center">
@@ -374,7 +361,8 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         </CardContent>
       </Card>
       
-      {/* Area Comparison */}
+      <AIStorytellingSection areaName={currentAreaData.name} answers={answers} />
+      
       <Card className="mb-8">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Area Comparison</h3>
@@ -393,7 +381,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
           </div>
           
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Spider Chart */}
             <div className="h-80">
               <h4 className="text-sm font-medium mb-2 text-center">Area Score Comparison</h4>
               <ChartContainer config={{
@@ -416,7 +403,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
               </ChartContainer>
             </div>
             
-            {/* Price Comparison */}
             <div className="h-80">
               <h4 className="text-sm font-medium mb-2 text-center">Price Comparison ($/month)</h4>
               <ResponsiveContainer width="100%" height="100%">
@@ -440,7 +426,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         </CardContent>
       </Card>
       
-      {/* Area Details Tabs */}
       <Card className="mb-8">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Detailed Area Analysis</h3>
