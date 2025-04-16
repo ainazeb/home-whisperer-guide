@@ -57,7 +57,10 @@ const areaImages = {
 };
 
 const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answers, onBack, areas = [] }) => {
-  const [selectedArea, setSelectedArea] = useState<string>(areas[0]?.name || "westside");
+  // Initialize selectedArea with the first area from the provided areas prop if available
+  // Otherwise default to "westside"
+  const initialSelectedArea = areas && areas.length > 0 ? areas[0].name : "westside";
+  const [selectedArea, setSelectedArea] = useState<string>(initialSelectedArea);
   
   // Prepare data for spider chart from the selected area
   const getRadarData = (area: typeof areas[0]) => {
@@ -198,9 +201,35 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
     }
   };
   
+  // Find the selected area in the provided areas array
+  const selectedAreaFromProps = areas.find(area => area.name === selectedArea);
+  
+  // Helper function to check if selectedArea is from the hardcoded areaDetails or from the props.areas
+  const isAreaFromProps = !!selectedAreaFromProps;
+  
+  // Helper function to get the appropriate area data
+  const getAreaData = () => {
+    if (isAreaFromProps) {
+      return {
+        name: selectedAreaFromProps?.name || "",
+        description: selectedAreaFromProps?.description || "",
+        keyPoints: selectedAreaFromProps?.highlights || [],
+        imageUrl: areaImages[selectedAreaFromProps?.name as keyof typeof areaImages] || "https://images.unsplash.com/photo-1466442929976-97f336a657be",
+        recommendationScore: selectedAreaFromProps?.score || 0
+      };
+    } else {
+      // Handle traditional way for the hardcoded areas
+      const areaKey = selectedArea as keyof typeof areaDetails;
+      return areaDetails[areaKey] || areaDetails.westside; // Default to westside if not found
+    }
+  };
+  
   const handleAreaSelect = (area: string) => {
     setSelectedArea(area);
   };
+  
+  // Get the current area data based on selection
+  const currentAreaData = getAreaData();
   
   return (
     <div className="space-y-6">
@@ -310,29 +339,29 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 border-b border-blue-100">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Top Recommendation</h3>
-            <Badge className="bg-blue-600">{areaDetails[selectedArea as keyof typeof areaDetails].recommendationScore}% Match</Badge>
+            <Badge className="bg-blue-600">{currentAreaData.recommendationScore}% Match</Badge>
           </div>
         </div>
         <CardContent className="p-0">
           <div className="md:flex">
             <div className="md:w-1/2">
               <img 
-                src={areaDetails[selectedArea as keyof typeof areaDetails].imageUrl} 
-                alt={areaDetails[selectedArea as keyof typeof areaDetails].name} 
+                src={currentAreaData.imageUrl} 
+                alt={currentAreaData.name} 
                 className="w-full h-64 object-cover"
               />
             </div>
             <div className="p-6 md:w-1/2">
               <div className="flex items-center mb-3">
                 <MapPin className="h-5 w-5 text-blue-600 mr-2" />
-                <h4 className="text-xl font-medium">{areaDetails[selectedArea as keyof typeof areaDetails].name}</h4>
+                <h4 className="text-xl font-medium">{currentAreaData.name}</h4>
               </div>
               <p className="text-muted-foreground mb-4">
-                {areaDetails[selectedArea as keyof typeof areaDetails].description}
+                {currentAreaData.description}
               </p>
               <h5 className="font-medium mb-2">Key Points:</h5>
               <ul className="space-y-1 mb-4">
-                {areaDetails[selectedArea as keyof typeof areaDetails].keyPoints.map((point, index) => (
+                {currentAreaData.keyPoints.map((point, index) => (
                   <li key={index} className="flex items-start">
                     <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
                     <span className="text-sm">{point}</span>
@@ -344,6 +373,7 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         </CardContent>
       </Card>
       
+      {/* The rest of the component remains unchanged */}
       {/* Area Comparison */}
       <Card className="mb-8">
         <CardContent className="p-6">
@@ -443,7 +473,7 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
                 <div>
                   <h4 className="font-medium mb-3">Population Demographics</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {areaDetails[selectedArea as keyof typeof areaDetails].name} has a diverse population that closely aligns with your preference for {answers.householdType || "various household types"}. The area has seen a steady growth in the demographic groups you prefer.
+                    {currentAreaData.name} has a diverse population that closely aligns with your preference for {answers.householdType || "various household types"}. The area has seen a steady growth in the demographic groups you prefer.
                   </p>
                   
                   <h5 className="text-sm font-medium mb-2">Age Distribution</h5>
@@ -520,7 +550,7 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
                 <div>
                   <h4 className="font-medium mb-3">Housing Overview</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {areaDetails[selectedArea as keyof typeof areaDetails].name} offers a range of housing options that align with your preferences for {answers.buildingAge || "various building types"}. The average home price in this area is approximately ${selectedArea === "downtown" ? "650,000" : selectedArea === "westside" ? "550,000" : selectedArea === "eastside" ? "480,000" : "420,000"}.
+                    {currentAreaData.name} offers a range of housing options that align with your preferences for {answers.buildingAge || "various building types"}. The average home price in this area is approximately ${selectedArea === "downtown" ? "650,000" : selectedArea === "westside" ? "550,000" : selectedArea === "eastside" ? "480,000" : "420,000"}.
                   </p>
                   
                   <h5 className="text-sm font-medium mb-2">Property Types</h5>
@@ -592,7 +622,7 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
                 <div>
                   <h4 className="font-medium mb-3">Development Projects</h4>
                   <p className="text-sm text-muted-foreground mb-4">
-                    {areaDetails[selectedArea as keyof typeof areaDetails].name} has {selectedArea === "downtown" ? "significant" : selectedArea === "westside" ? "moderate" : selectedArea === "eastside" ? "substantial" : "limited"} development activity. This aligns with your preference for areas with {answers.development || "balanced development"}.
+                    {currentAreaData.name} has {selectedArea === "downtown" ? "significant" : selectedArea === "westside" ? "moderate" : selectedArea === "eastside" ? "substantial" : "limited"} development activity. This aligns with your preference for areas with {answers.development || "balanced development"}.
                   </p>
                   
                   <div className="space-y-3">
@@ -617,525 +647,4 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
                               <span>Westside Commons Park Expansion (2024-2025)</span>
                             </li>
                             <li className="flex items-start">
-                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                              <span>Neighborhood Retail Hub (2025)</span>
-                            </li>
-                          </>
-                        ) : selectedArea === "eastside" ? (
-                          <>
-                            <li className="flex items-start">
-                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                              <span>Eastside Arts District Revitalization (2024-2026)</span>
-                            </li>
-                            <li className="flex items-start">
-                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                              <span>New Community Center & Library (2025)</span>
-                            </li>
-                          </>
-                        ) : (
-                          <>
-                            <li className="flex items-start">
-                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                              <span>Expanded Shopping Center (2025)</span>
-                            </li>
-                            <li className="flex items-start">
-                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                              <span>Community Sports Complex (2026)</span>
-                            </li>
-                          </>
-                        )}
-                      </ul>
-                    </div>
-                    
-                    <div className="p-3 rounded-lg border">
-                      <h5 className="text-sm font-medium mb-1">Construction Activity</h5>
-                      <div className="flex items-center space-x-2 mb-2">
-                        <span className="text-xs">Low</span>
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-blue-600 rounded-full" 
-                            style={{ 
-                              width: 
-                                selectedArea === "downtown" 
-                                  ? "85%" 
-                                  : selectedArea === "westside" 
-                                    ? "50%" 
-                                    : selectedArea === "eastside" 
-                                      ? "70%" 
-                                      : "30%" 
-                            }} 
-                          />
-                        </div>
-                        <span className="text-xs">High</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {selectedArea === "downtown" 
-                          ? "High construction activity in several zones" 
-                          : selectedArea === "westside" 
-                            ? "Moderate, well-managed construction" 
-                            : selectedArea === "eastside" 
-                              ? "Growing construction activity as area develops" 
-                              : "Minimal construction noise and disruption"
-                        }
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-3">Green Spaces & Amenities</h4>
-                  
-                  <div className="p-3 rounded-lg border mb-3">
-                    <h5 className="text-sm font-medium mb-1">Parks & Recreation</h5>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {selectedArea === "downtown" 
-                        ? "Urban pocket parks and waterfront access" 
-                        : selectedArea === "westside" 
-                          ? "Excellent network of parks and green corridors" 
-                          : selectedArea === "eastside" 
-                            ? "Several large parks and river trails" 
-                            : "Extensive green spaces and nature preserves"
-                      }
-                    </p>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs">Access</span>
-                      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-green-500 rounded-full" 
-                          style={{ 
-                            width: 
-                              selectedArea === "downtown" 
-                                ? "70%" 
-                                : selectedArea === "westside" 
-                                  ? "90%" 
-                                  : selectedArea === "eastside" 
-                                    ? "75%" 
-                                    : "85%" 
-                          }} 
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="p-3 rounded-lg border mb-3">
-                    <h5 className="text-sm font-medium mb-1">Local Amenities</h5>
-                    <div className="grid grid-cols-2 gap-2 mb-2">
-                      {["restaurants", "shopping", "education", "healthcare", "fitness", "entertainment"].map(amenity => (
-                        <div key={amenity} className="flex items-center text-xs">
-                          <div 
-                            className={`h-2 w-2 rounded-full mr-1 ${
-                              (selectedArea === "downtown" && (amenity === "restaurants" || amenity === "shopping" || amenity === "entertainment")) ||
-                              (selectedArea === "westside" && (amenity === "restaurants" || amenity === "education" || amenity === "fitness")) ||
-                              (selectedArea === "eastside" && (amenity === "shopping" || amenity === "entertainment")) ||
-                              (selectedArea === "suburbs" && (amenity === "education" || amenity === "healthcare"))
-                                ? "bg-green-500" 
-                                : "bg-blue-300"
-                            }`} 
-                          />
-                          <span className="capitalize">{amenity}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <Separator className="my-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {selectedArea === "downtown" 
-                        ? "Excellent dining and nightlife options" 
-                        : selectedArea === "westside" 
-                          ? "Great balance of all amenities" 
-                          : selectedArea === "eastside" 
-                            ? "Growing number of shops and restaurants" 
-                            : "Good basic amenities with fewer specialty options"
-                      }
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <h5 className="text-sm font-medium mb-1">Future Plans</h5>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedArea === "downtown" 
-                        ? "Major investment in waterfront parks and public plazas planned over next 5 years" 
-                        : selectedArea === "westside" 
-                          ? "Expanding green corridor network and adding community gardens" 
-                          : selectedArea === "eastside" 
-                            ? "New cultural center and expanded riverfront access in development" 
-                            : "Preserving natural areas while adding recreational facilities"
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="transportation" className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium mb-3">Transportation Options</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {areaDetails[selectedArea as keyof typeof areaDetails].name} offers {selectedArea === "downtown" ? "excellent" : selectedArea === "westside" ? "very good" : selectedArea === "eastside" ? "good" : "fair"} transportation options that align with your preferences for {answers.transportTypes?.join(", ") || "various transportation methods"}.
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-lg border">
-                      <h5 className="text-sm font-medium mb-2">Transit Modes</h5>
-                      <div className="grid grid-cols-2 gap-y-3">
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Public Transit</span>
-                            <span>{selectedArea === "downtown" ? "95%" : selectedArea === "westside" ? "80%" : selectedArea === "eastside" ? "70%" : "45%"}</span>
-                          </div>
-                          <Progress value={selectedArea === "downtown" ? 95 : selectedArea === "westside" ? 80 : selectedArea === "eastside" ? 70 : 45} className="h-2" />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Cycling</span>
-                            <span>{selectedArea === "downtown" ? "85%" : selectedArea === "westside" ? "90%" : selectedArea === "eastside" ? "70%" : "60%"}</span>
-                          </div>
-                          <Progress value={selectedArea === "downtown" ? 85 : selectedArea === "westside" ? 90 : selectedArea === "eastside" ? 70 : 60} className="h-2" />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Walking</span>
-                            <span>{selectedArea === "downtown" ? "98%" : selectedArea === "westside" ? "85%" : selectedArea === "eastside" ? "75%" : "50%"}</span>
-                          </div>
-                          <Progress value={selectedArea === "downtown" ? 98 : selectedArea === "westside" ? 85 : selectedArea === "eastside" ? 75 : 50} className="h-2" />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Car-friendly</span>
-                            <span>{selectedArea === "downtown" ? "60%" : selectedArea === "westside" ? "75%" : selectedArea === "eastside" ? "85%" : "95%"}</span>
-                          </div>
-                          <Progress value={selectedArea === "downtown" ? 60 : selectedArea === "westside" ? 75 : selectedArea === "eastside" ? 85 : 95} className="h-2" />
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-3 rounded-lg border">
-                      <h5 className="text-sm font-medium mb-1">Commute Times</h5>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex justify-between">
-                          <span>To Downtown</span>
-                          <span>
-                            {selectedArea === "downtown" 
-                              ? "0-10 min" 
-                              : selectedArea === "westside" 
-                                ? "15-25 min" 
-                                : selectedArea === "eastside" 
-                                  ? "20-30 min" 
-                                  : "30-45 min"
-                            }
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>To Major Employment Centers</span>
-                          <span>
-                            {selectedArea === "downtown" 
-                              ? "5-15 min" 
-                              : selectedArea === "westside" 
-                                ? "10-20 min" 
-                                : selectedArea === "eastside" 
-                                  ? "15-25 min" 
-                                  : "25-40 min"
-                            }
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>To Airport</span>
-                          <span>
-                            {selectedArea === "downtown" 
-                              ? "20-30 min" 
-                              : selectedArea === "westside" 
-                                ? "25-35 min" 
-                                : selectedArea === "eastside" 
-                                  ? "15-25 min" 
-                                  : "30-45 min"
-                            }
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-3">Future Transportation</h4>
-                  
-                  <div className="p-3 rounded-lg border mb-3">
-                    <h5 className="text-sm font-medium mb-1">Planned Improvements</h5>
-                    <ul className="text-xs space-y-2 mb-3">
-                      {selectedArea === "downtown" ? (
-                        <>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>New subway line extension (2026)</span>
-                          </li>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>Pedestrian-only zones expansion (2025)</span>
-                          </li>
-                        </>
-                      ) : selectedArea === "westside" ? (
-                        <>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>Protected bike lane network completion (2025)</span>
-                          </li>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>Express bus service expansion (2024)</span>
-                          </li>
-                        </>
-                      ) : selectedArea === "eastside" ? (
-                        <>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>Light rail extension (2027)</span>
-                          </li>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>New highway interchange (2026)</span>
-                          </li>
-                        </>
-                      ) : (
-                        <>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>Bus rapid transit corridor (2026)</span>
-                          </li>
-                          <li className="flex items-start">
-                            <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                            <span>Road widening project (2025)</span>
-                          </li>
-                        </>
-                      )}
-                    </ul>
-                    <Separator className="my-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {selectedArea === "downtown" 
-                        ? "Significant investment in transit and pedestrian infrastructure" 
-                        : selectedArea === "westside" 
-                          ? "Focus on active transportation and transit connections" 
-                          : selectedArea === "eastside" 
-                            ? "Major transit expansion and road improvements" 
-                            : "Road improvements with some transit expansion"
-                      }
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <h5 className="text-sm font-medium mb-1">Impact Analysis</h5>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedArea === "downtown" 
-                        ? "Future transportation projects will further reduce the need for car ownership and improve access to surrounding areas." 
-                        : selectedArea === "westside" 
-                          ? "Planned improvements will enhance the already strong multimodal transportation options in this area." 
-                          : selectedArea === "eastside" 
-                            ? "Current transportation limitations will be significantly improved by planned projects over the next 3-5 years." 
-                            : "While remaining car-dependent, planned improvements will provide more options for commuters."
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="technology" className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-medium mb-3">Technology Infrastructure</h4>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {areaDetails[selectedArea as keyof typeof areaDetails].name} offers {selectedArea === "downtown" ? "cutting-edge" : selectedArea === "westside" ? "excellent" : selectedArea === "eastside" ? "good" : "basic"} technology infrastructure that aligns with your interest in {answers.smartFeatures?.join(", ") || "smart home features"}.
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <div className="p-3 rounded-lg border">
-                      <h5 className="text-sm font-medium mb-2">Internet Connectivity</h5>
-                      <div className="space-y-2">
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>Fiber Coverage</span>
-                            <span>{selectedArea === "downtown" ? "95%" : selectedArea === "westside" ? "90%" : selectedArea === "eastside" ? "75%" : "60%"}</span>
-                          </div>
-                          <Progress value={selectedArea === "downtown" ? 95 : selectedArea === "westside" ? 90 : selectedArea === "eastside" ? 75 : 60} className="h-2" />
-                        </div>
-                        <div>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span>5G Coverage</span>
-                            <span>{selectedArea === "downtown" ? "100%" : selectedArea === "westside" ? "95%" : selectedArea === "eastside" ? "85%" : "70%"}</span>
-                          </div>
-                          <Progress value={selectedArea === "downtown" ? 100 : selectedArea === "westside" ? 95 : selectedArea === "eastside" ? 85 : 70} className="h-2" />
-                        </div>
-                        <div className="text-xs text-muted-foreground mt-2">
-                          Average internet speeds: {selectedArea === "downtown" ? "1.5 Gbps" : selectedArea === "westside" ? "1 Gbps" : selectedArea === "eastside" ? "900 Mbps" : "650 Mbps"}
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="p-3 rounded-lg border">
-                      <h5 className="text-sm font-medium mb-1">Smart City Initiatives</h5>
-                      <div className="grid grid-cols-2 gap-2 mb-2">
-                        {["smart-traffic", "smart-lighting", "public-wifi", "ev-charging", "waste-management", "safety-monitoring"].map(feature => (
-                          <div key={feature} className="flex items-center text-xs">
-                            <div 
-                              className={`h-2 w-2 rounded-full mr-1 ${
-                                (selectedArea === "downtown" && (feature === "smart-traffic" || feature === "smart-lighting" || feature === "public-wifi" || feature === "ev-charging" || feature === "safety-monitoring")) ||
-                                (selectedArea === "westside" && (feature === "smart-lighting" || feature === "public-wifi" || feature === "ev-charging" || feature === "waste-management")) ||
-                                (selectedArea === "eastside" && (feature === "public-wifi" || feature === "ev-charging" || feature === "waste-management")) ||
-                                (selectedArea === "suburbs" && (feature === "waste-management"))
-                                  ? "bg-green-500" 
-                                  : "bg-gray-300"
-                              }`} 
-                            />
-                            <span className="capitalize">{feature.replace(/-/g, " ")}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <Separator className="my-2" />
-                      <p className="text-xs text-muted-foreground">
-                        {selectedArea === "downtown" 
-                          ? "Comprehensive smart city initiatives with ongoing innovation programs" 
-                          : selectedArea === "westside" 
-                            ? "Strong smart city features with active expansion programs" 
-                            : selectedArea === "eastside" 
-                              ? "Growing smart city implementation with several new initiatives" 
-                              : "Basic smart city features with limited coverage"
-                        }
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-3">Smart Home Readiness</h4>
-                  
-                  <div className="p-3 rounded-lg border mb-3">
-                    <h5 className="text-sm font-medium mb-1">New Construction Features</h5>
-                    <ul className="text-xs space-y-2 mb-3">
-                      <li className="flex items-start">
-                        <div 
-                          className={`mr-2 mt-1 h-1.5 w-1.5 rounded-full ${selectedArea === "suburbs" ? "bg-gray-300" : "bg-blue-600"} shrink-0`} 
-                        />
-                        <span>Smart climate control pre-wiring</span>
-                      </li>
-                      <li className="flex items-start">
-                        <div 
-                          className={`mr-2 mt-1 h-1.5 w-1.5 rounded-full ${selectedArea === "suburbs" || selectedArea === "eastside" ? "bg-gray-300" : "bg-blue-600"} shrink-0`} 
-                        />
-                        <span>Integrated security systems</span>
-                      </li>
-                      <li className="flex items-start">
-                        <div 
-                          className={`mr-2 mt-1 h-1.5 w-1.5 rounded-full ${selectedArea === "downtown" ? "bg-blue-600" : "bg-gray-300"} shrink-0`} 
-                        />
-                        <span>Building-wide automation systems</span>
-                      </li>
-                      <li className="flex items-start">
-                        <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
-                        <span>High-speed internet infrastructure</span>
-                      </li>
-                    </ul>
-                    <Separator className="my-2" />
-                    <p className="text-xs text-muted-foreground">
-                      {selectedArea === "downtown" 
-                        ? "New buildings incorporate extensive smart technology by default" 
-                        : selectedArea === "westside" 
-                          ? "Most new construction includes significant smart home features" 
-                          : selectedArea === "eastside" 
-                            ? "Growing trend of smart features in new construction" 
-                            : "Basic smart home preparation in newer communities"
-                      }
-                    </p>
-                  </div>
-                  
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <h5 className="text-sm font-medium mb-1">Future Technology Outlook</h5>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedArea === "downtown" 
-                        ? "This area is at the forefront of smart city and home technology adoption, with multiple pilot programs for emerging technologies." 
-                        : selectedArea === "westside" 
-                          ? "Strong investment in technology infrastructure makes this area well-positioned for future smart home innovations." 
-                          : selectedArea === "eastside" 
-                            ? "Rapidly improving technology infrastructure with significant planned investments." 
-                            : "Gradual technology improvements with some limitations in more remote areas."
-                      }
-                    </p>
-                  </div>
-                  
-                  <div className="mt-3 p-3 rounded-lg border">
-                    <h5 className="text-sm font-medium mb-1">Technology Alignment</h5>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs">Match with your preferences</span>
-                      <span className="text-xs font-medium">
-                        {selectedArea === "downtown" 
-                          ? "92%" 
-                          : selectedArea === "westside" 
-                            ? "88%" 
-                            : selectedArea === "eastside" 
-                              ? "73%" 
-                              : "65%"
-                        }
-                      </span>
-                    </div>
-                    <Progress 
-                      value={
-                        selectedArea === "downtown" 
-                          ? 92
-                          : selectedArea === "westside" 
-                            ? 88
-                            : selectedArea === "eastside" 
-                              ? 73
-                              : 65
-                      } 
-                      className="h-2" 
-                    />
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-      
-      {/* Final Recommendation */}
-      <Card className="border-2 border-indigo-200">
-        <CardContent className="p-6">
-          <h3 className="text-xl font-semibold text-center mb-4">Your Personalized Story</h3>
-          
-          <div className="p-5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 mb-6">
-            <p className="italic text-muted-foreground">
-              Based on your preferences across all categories, we've crafted this personalized home-buying journey for you:
-            </p>
-            
-            <div className="mt-4 space-y-4">
-              <p>
-                Imagine waking up in your new home in {areaDetails[selectedArea as keyof typeof areaDetails].name}, where your preferences for {answers.householdType || "your ideal neighborhood demographics"} and {answers.amenities?.join(", ") || "local amenities"} are perfectly matched.
-              </p>
-              
-              <p>
-                Your commute to work takes just {selectedArea === "downtown" ? "10" : selectedArea === "westside" ? "20" : selectedArea === "eastside" ? "25" : "35"} minutes using your preferred {answers.transportTypes ? answers.transportTypes[0] : "transportation"} option, and you have easy access to {selectedArea === "downtown" ? "countless restaurants and shops" : selectedArea === "westside" ? "excellent parks and recreational facilities" : selectedArea === "eastside" ? "a growing arts scene and local markets" : "spacious homes and good schools"}.
-              </p>
-              
-              <p>
-                In the evenings, you can enjoy the {selectedArea === "downtown" ? "vibrant city atmosphere" : selectedArea === "westside" ? "peaceful parks and trails" : selectedArea === "eastside" ? "emerging restaurant scene" : "quiet suburban setting"}, and your home is equipped with the smart features you value most, including {answers.smartFeatures?.join(", ") || "modern technology amenities"}.
-              </p>
-              
-              <p>
-                With {selectedArea === "downtown" ? "substantial" : selectedArea === "westside" ? "thoughtful" : selectedArea === "eastside" ? "promising" : "steady"} development planned for the future, your property investment is well-positioned to grow in value while maintaining the lifestyle elements that matter most to you.
-              </p>
-            </div>
-          </div>
-          
-          <div className="text-center">
-            <Button 
-              onClick={onBack}
-              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600"
-            >
-              Return to Results
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
-
-export default FullRecommendationPanel;
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0"
