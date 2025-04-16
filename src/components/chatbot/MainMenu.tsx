@@ -1,119 +1,99 @@
 
 import React from "react";
 import { Home, Users, Building2, Train, Laptop } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { ChatSection } from "@/components/ChatbotInterface";
-import { motion } from "framer-motion";
 
 interface MainMenuProps {
   onSelect: (section: ChatSection) => void;
+  sectionProgress: Record<ChatSection, { completed: boolean; answers: Record<string, any> }>;
+  completedSections: number;
 }
 
-interface MenuItemProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  onClick: () => void;
-  delay: number;
-}
+const MainMenu: React.FC<MainMenuProps> = ({ onSelect, sectionProgress, completedSections }) => {
+  const totalProgress = (completedSections / 5) * 100;
 
-const MenuItem: React.FC<MenuItemProps> = ({ title, description, icon, onClick, delay }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: delay * 0.1, duration: 0.5 }}
-  >
-    <Button 
-      variant="outline" 
-      className="h-auto flex flex-col items-center text-left p-6 hover:bg-accent transition-all duration-300 w-full"
-      onClick={onClick}
-    >
-      <div className="mb-4 text-4xl">{icon}</div>
-      <h3 className="text-xl font-semibold mb-2">{title}</h3>
-      <p className="text-sm text-muted-foreground">{description}</p>
-    </Button>
-  </motion.div>
-);
-
-const MainMenu: React.FC<MainMenuProps> = ({ onSelect }) => {
   const menuItems = [
     {
-      section: "basic-questions" as ChatSection,
+      id: "basic-questions" as ChatSection,
+      icon: Home,
       title: "Basic Questions",
-      description: "Define your budget, location, and property preferences.",
-      icon: "🏡"
+      description: "Tell us about your ideal home preferences",
     },
     {
-      section: "demographics" as ChatSection,
+      id: "demographics" as ChatSection,
+      icon: Users,
       title: "Demographics",
-      description: "Who lives here now, and what will it look like in 20 years?",
-      icon: "👥"
+      description: "Explore neighborhood demographics",
     },
     {
-      section: "construction" as ChatSection,
-      title: "Construction & Development",
-      description: "Learn about green spaces, malls, and planned projects.",
-      icon: "🏗️"
+      id: "construction" as ChatSection,
+      icon: Building2,
+      title: "Development",
+      description: "Learn about area construction and amenities",
     },
     {
-      section: "transportation" as ChatSection,
+      id: "transportation" as ChatSection,
+      icon: Train,
       title: "Transportation",
-      description: "Compare current and future mobility options.",
-      icon: "🚇"
+      description: "Discover mobility options",
     },
     {
-      section: "smart-home" as ChatSection,
-      title: "Smart Home Tech",
-      description: "Discover smart-ready homes and infrastructure.",
-      icon: "🤖"
-    }
+      id: "smart-home" as ChatSection,
+      icon: Laptop,
+      title: "Smart Home",
+      description: "Explore technology features",
+    },
   ];
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6"
-    >
-      <motion.div 
-        className="text-center mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+    <div className="space-y-6">
+      <div className="text-center">
         <h2 className="text-2xl font-bold mb-2">Home Buying Assistant</h2>
-        <p className="text-muted-foreground">
-          What would you like to explore today? Choose from the options below.
+        <p className="text-muted-foreground mb-4">
+          Complete any section to get personalized recommendations. Your progress is automatically saved.
         </p>
-      </motion.div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {menuItems.map((item, index) => (
-          <MenuItem
-            key={item.section}
-            title={item.title}
-            description={item.description}
-            icon={item.icon}
-            onClick={() => onSelect(item.section)}
-            delay={index}
-          />
+        <div className="max-w-md mx-auto mb-6">
+          <div className="flex justify-between text-sm mb-2">
+            <span>Overall Progress</span>
+            <span>{completedSections}/5 sections completed</span>
+          </div>
+          <Progress value={totalProgress} className="h-2" />
+        </div>
+      </div>
+
+      <div className="grid gap-4">
+        {menuItems.map((item) => (
+          <Card
+            key={item.id}
+            className={`p-4 cursor-pointer transition-all hover:shadow-md ${
+              sectionProgress[item.id].completed ? 'border-green-200 bg-green-50' : ''
+            }`}
+            onClick={() => onSelect(item.id)}
+          >
+            <div className="flex items-start gap-4">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <item.icon className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="flex-grow">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-semibold">{item.title}</h3>
+                  {sectionProgress[item.id].completed && (
+                    <Badge variant="outline" className="bg-green-100 text-green-700">
+                      Completed
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-muted-foreground">{item.description}</p>
+              </div>
+            </div>
+          </Card>
         ))}
       </div>
-      
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
-        className="mt-8 text-center"
-      >
-        <Card className="p-4 border-dashed">
-          <p className="text-sm text-muted-foreground">
-            Complete all sections for a comprehensive home buying recommendation tailored to your preferences
-          </p>
-        </Card>
-      </motion.div>
-    </motion.div>
+    </div>
   );
 };
 

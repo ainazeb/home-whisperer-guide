@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,11 +20,36 @@ export type ChatSection =
   | "transportation" 
   | "smart-home";
 
+// New interface for tracking section completion
+interface SectionProgress {
+  completed: boolean;
+  answers: Record<string, any>;
+}
+
 const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
   const [currentSection, setCurrentSection] = useState<ChatSection>("main");
   const [showResults, setShowResults] = useState(false);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [sectionProgress, setSectionProgress] = useState<Record<ChatSection, SectionProgress>>({
+    "basic-questions": { completed: false, answers: {} },
+    "demographics": { completed: false, answers: {} },
+    "construction": { completed: false, answers: {} },
+    "transportation": { completed: false, answers: {} },
+    "smart-home": { completed: false, answers: {} }
+  });
   const { toast } = useToast();
+
+  // Load saved progress from localStorage
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('chatbotProgress');
+    if (savedProgress) {
+      setSectionProgress(JSON.parse(savedProgress));
+    }
+  }, []);
+
+  // Save progress to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('chatbotProgress', JSON.stringify(sectionProgress));
+  }, [sectionProgress]);
 
   const handleSectionSelect = (section: ChatSection) => {
     setCurrentSection(section);
@@ -48,15 +73,35 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
     });
   };
 
-  const handleSubmitAnswers = (sectionAnswers: Record<string, any>) => {
-    setAnswers({ ...answers, ...sectionAnswers });
+  const handleSubmitAnswers = (sectionAnswers: Record<string, any>, section: ChatSection) => {
+    setSectionProgress(prev => ({
+      ...prev,
+      [section]: {
+        completed: true,
+        answers: sectionAnswers
+      }
+    }));
+    
     setShowResults(true);
     
     toast({
-      title: "Analyzing responses",
-      description: "Processing your preferences...",
+      title: "Section completed",
+      description: "Your answers have been saved. You can now view results or continue with other sections.",
       duration: 2000,
     });
+  };
+
+  const getAllAnswers = () => {
+    return Object.entries(sectionProgress).reduce((acc, [key, value]) => {
+      return {
+        ...acc,
+        ...value.answers
+      };
+    }, {});
+  };
+
+  const getCompletedSectionsCount = () => {
+    return Object.values(sectionProgress).filter(section => section.completed).length;
   };
   
   // Helper function to convert section IDs to display names
@@ -85,22 +130,30 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
         <CardContent className="flex-grow overflow-auto p-0">
           <div className="p-6 h-full">
             {currentSection === "main" && (
-              <MainMenu onSelect={handleSectionSelect} />
+              <MainMenu 
+                onSelect={handleSectionSelect} 
+                sectionProgress={sectionProgress}
+                completedSections={getCompletedSectionsCount()}
+              />
             )}
             
             {currentSection !== "main" && !showResults && (
               <QuestionnairePanel 
                 section={currentSection} 
                 onBack={handleBackToMenu}
-                onSubmit={handleSubmitAnswers}
+                onSubmit={(answers) => handleSubmitAnswers(answers, currentSection)}
+                initialAnswers={sectionProgress[currentSection].answers}
               />
             )}
             
             {currentSection !== "main" && showResults && (
               <ResultsPanel 
                 section={currentSection} 
-                answers={answers}
+                answers={getAllAnswers()}
+                sectionAnswers={sectionProgress[currentSection].answers}
                 onBack={() => setShowResults(false)}
+                onModifyAnswers={() => setShowResults(false)}
+                completedSections={getCompletedSectionsCount()}
               />
             )}
           </div>

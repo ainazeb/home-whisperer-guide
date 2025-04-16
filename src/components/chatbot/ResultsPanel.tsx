@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { ChevronLeft, Play, ThumbsUp, Pause, MapPin, Building2, Train, Home, Trees, Edit, Map as MapIcon, MessageCircle, BarChart3, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,10 @@ import FullRecommendationPanel from "./FullRecommendationPanel";
 interface ResultsPanelProps {
   section: ChatSection;
   answers: Record<string, any>;
+  sectionAnswers: Record<string, any>;
   onBack: () => void;
+  onModifyAnswers: () => void;
+  completedSections: number;
 }
 
 const getResultContent = (section: ChatSection, answers: Record<string, any>) => {
@@ -83,7 +85,6 @@ const getResultContent = (section: ChatSection, answers: Record<string, any>) =>
     }
   ];
 
-  // Get answer statistics and summaries based on section
   switch (section) {
     case "basic-questions":
       return {
@@ -162,14 +163,21 @@ const getResultContent = (section: ChatSection, answers: Record<string, any>) =>
   };
 };
 
-const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack }) => {
+const ResultsPanel: React.FC<ResultsPanelProps> = ({
+  section,
+  answers,
+  sectionAnswers,
+  onBack,
+  onModifyAnswers,
+  completedSections
+}) => {
   const { toast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const [showFullRecommendation, setShowFullRecommendation] = useState(false);
   
   const resultContent = getResultContent(section, answers);
-  // Ensure we always have the required properties with defaults if they're missing
+  
   const { 
     title = "Your Results", 
     summary = "Thank you for sharing your preferences with us.", 
@@ -177,6 +185,14 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
     exploreSuggestion = "Based on your selections, we can provide personalized recommendations.",
     areas = []
   } = resultContent || {};
+  
+  const statisticsSources = {
+    demographics: "https://www.census.gov/data.html",
+    housing: "https://www.realtor.com/research/data",
+    development: "https://www.planning.org/data",
+    transportation: "https://www.transit.dot.gov/ntd/data-product/monthly-module-raw-data-release",
+    economy: "https://www.bls.gov/data"
+  };
   
   const handleGetRecommendation = () => {
     toast({
@@ -217,13 +233,62 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       </div>
       
       <div className="text-center mb-6">
+        <h3 className="text-2xl font-bold text-primary mb-2">
+          {showFullRecommendation ? "Your Ideal Home Areas" : "Section Summary"}
+        </h3>
+        {!showFullRecommendation && (
+          <>
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-4">
+              You've completed {completedSections}/5 sections. 
+              {completedSections < 5 ? 
+                " Complete more sections for more accurate recommendations." : 
+                " You can now view comprehensive recommendations."}
+            </p>
+            <div className="flex justify-center gap-4">
+              <Button variant="outline" onClick={onModifyAnswers}>
+                Modify Answers
+              </Button>
+              {completedSections > 0 && (
+                <Button onClick={handleGetRecommendation}>
+                  {completedSections === 5 ? 
+                    "View Full Recommendations" : 
+                    "View Current Recommendations"}
+                </Button>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+      
+      {!showFullRecommendation && (
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <h4 className="font-medium mb-4">Statistics Sources</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(statisticsSources).map(([key, url]) => (
+                <a
+                  key={key}
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center p-2 hover:bg-muted rounded-lg"
+                >
+                  <div className="w-2 h-2 bg-blue-600 rounded-full mr-2" />
+                  <span className="text-sm capitalize">{key} Data</span>
+                </a>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      <div className="text-center mb-6">
         <h3 className="text-2xl font-bold text-primary mb-2">{title}</h3>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           We've analyzed your answers and prepared a summary of your preferences.
         </p>
       </div>
       
-      {/* Answer Summary Card */}
       <Card className="mb-6">
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -253,7 +318,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
         </CardContent>
       </Card>
       
-      {/* Buttons Card */}
       <Card className="border-2 border-blue-100">
         <CardContent className="p-6">
           <div className="text-center space-y-6">
@@ -316,7 +380,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   );
 };
 
-// All the formatting helper functions
 const formatCurrency = (value: number) => {
   return value ? `$${value.toLocaleString()}` : "your budget";
 };

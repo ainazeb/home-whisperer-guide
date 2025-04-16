@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ interface QuestionnairePanelProps {
   section: ChatSection;
   onBack: () => void;
   onSubmit: (answers: Record<string, any>) => void;
+  initialAnswers?: Record<string, any>;
 }
 
 interface BaseQuestion {
@@ -46,16 +46,20 @@ interface RadioQuestion extends BaseQuestion {
 
 type Question = SliderQuestion | SelectQuestion | CheckboxQuestion | RadioQuestion;
 
-const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ section, onBack, onSubmit }) => {
+const QuestionnairePanel: React.FC<QuestionnairePanelProps> = ({ 
+  section, 
+  onBack, 
+  onSubmit,
+  initialAnswers = {} 
+}) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, any>>(initialAnswers);
   const [isReturningToMenu, setIsReturningToMenu] = useState(false);
 
   const questions = getQuestionsForSection(section);
   
   const progress = ((currentStep + 1) / questions.length) * 100;
   
-  // Initialize default values for questions
   useEffect(() => {
     const initialAnswers: Record<string, any> = {};
     questions.forEach(question => {
