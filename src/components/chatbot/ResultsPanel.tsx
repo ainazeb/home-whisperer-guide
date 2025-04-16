@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { ChevronLeft, Play, ThumbsUp, Pause, MapPin, Building2, Train, Home, Trees } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -95,35 +96,40 @@ const getResultContent = (section: ChatSection, answers: Record<string, any>) =>
       return {
         title: "Neighborhood Demographics",
         summary: `You're interested in areas with ${formatDemographics(answers.ageGroups)} and prefer neighborhoods with ${formatHouseholdType(answers.householdType)}. The demographic projections are ${formatImportance(answers.futureProjections)} to you.`,
-        recommendation: "Based on your preferences, the Riverdale district would be an excellent match. It has a growing population of your preferred demographic groups and is projected to maintain this trend over the next 20 years according to city planning data."
+        recommendation: "Based on your preferences, the Riverdale district would be an excellent match. It has a growing population of your preferred demographic groups and is projected to maintain this trend over the next 20 years according to city planning data.",
+        areas: areas
       };
       
     case "construction":
       return {
         title: "Development & Green Space",
         summary: `Access to green spaces is ${formatImportance(answers.greenSpace)} for you, and you want to be near amenities like ${formatAmenities(answers.amenities)}. You've indicated that you're ${formatDevelopmentComfort(answers.development)} with ongoing construction.`,
-        recommendation: "The Westgate area matches your preferences well. It has extensive parks and green spaces, while also featuring your desired amenities. The area has a moderate amount of planned development that shouldn't be disruptive based on your comfort level with construction."
+        recommendation: "The Westgate area matches your preferences well. It has extensive parks and green spaces, while also featuring your desired amenities. The area has a moderate amount of planned development that shouldn't be disruptive based on your comfort level with construction.",
+        areas: areas
       };
       
     case "transportation":
       return {
         title: "Mobility & Transportation",
         summary: `You need access to ${formatTransportation(answers.transportTypes)} and prefer a maximum commute time of ${answers.commuteTime} minutes. Future transportation improvements are ${formatTransportImportance(answers.futureTransport)} to you.`,
-        recommendation: "The Oakridge neighborhood offers excellent transportation options matching your preferences. The area is well-connected with your preferred transit types and has several planned improvements that will further enhance mobility in the coming years."
+        recommendation: "The Oakridge neighborhood offers excellent transportation options matching your preferences. The area is well-connected with your preferred transit types and has several planned improvements that will further enhance mobility in the coming years.",
+        areas: areas
       };
       
     case "smart-home":
       return {
         title: "Smart Home Technology Profile",
         summary: `You're interested in smart home features like ${formatSmartFeatures(answers.smartFeatures)} and rate the importance of smart technology as ${formatImportance(answers.smartImportance)}. You want a home that's ${formatFutureProof(answers.futureProof)} for future technology.`,
-        recommendation: "The newly developed TechRidge properties would be perfect for your smart home preferences. These homes come with many of your desired features pre-installed and have infrastructure ready for future upgrades. The neighborhood also has advanced fiber connectivity and smart city initiatives."
+        recommendation: "The newly developed TechRidge properties would be perfect for your smart home preferences. These homes come with many of your desired features pre-installed and have infrastructure ready for future upgrades. The neighborhood also has advanced fiber connectivity and smart city initiatives.",
+        areas: areas
       };
       
     default:
       return {
         title: "Your Results",
         summary: "Thank you for sharing your preferences with us.",
-        recommendation: "Based on your selections, we've compiled some initial recommendations. For more detailed insights, please contact our specialists."
+        recommendation: "Based on your selections, we've compiled some initial recommendations. For more detailed insights, please contact our specialists.",
+        areas: areas
       };
   };
 };
@@ -135,7 +141,14 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   const [areaExpanded, setAreaExpanded] = useState<string | null>(null);
   const [showFullRecommendation, setShowFullRecommendation] = useState(false);
   
-  const { title, summary, recommendation, areas } = getResultContent(section, answers);
+  const resultContent = getResultContent(section, answers);
+  // Ensure we always have the required properties with defaults if they're missing
+  const { 
+    title = "Your Results", 
+    summary = "Thank you for sharing your preferences with us.", 
+    recommendation = "Based on your selections, we've compiled some initial recommendations.",
+    areas = []
+  } = resultContent || {};
   
   const handleGetRecommendation = () => {
     toast({
@@ -198,7 +211,11 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   };
   
   if (showFullRecommendation) {
-    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} areas={areas} />;
+    return <FullRecommendationPanel 
+      answers={answers} 
+      onBack={() => setShowFullRecommendation(false)} 
+      areas={areas} 
+    />;
   }
   
   return (
@@ -235,7 +252,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
                 <div className="grid grid-cols-1 gap-4">
                   {areaExpanded === 'map' ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 animate-fade-in">
-                      {areas.map((area, index) => (
+                      {Array.isArray(areas) && areas.map((area, index) => (
                         <div key={area.name} className="bg-blue-50 p-3 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
                           <div className="text-2xl mb-2">{index === 0 ? '🌟' : '📍'}</div>
                           <p className="text-sm font-medium text-blue-700">{area.name}</p>
@@ -299,7 +316,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
                   <div className="w-full animate-fade-in">
                     <h4 className="text-sm font-medium mb-4">Area Comparison Based on Your Preferences</h4>
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      {areas.map((area) => (
+                      {Array.isArray(areas) && areas.map((area) => (
                         <div key={area.name} className="flex flex-col items-center">
                           <div className={`h-${area.score} w-16 bg-blue-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-blue-500`}
                                style={{ height: `${area.score}px` }}>
@@ -307,7 +324,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
                           <p className="text-xs mt-1 font-medium">{area.name}</p>
                           <p className="text-xs text-blue-700">{area.score}%</p>
                           <div className="mt-2 text-xs text-gray-600">
-                            {area.highlights.slice(0, 2).map((highlight, idx) => (
+                            {Array.isArray(area.highlights) && area.highlights.slice(0, 2).map((highlight, idx) => (
                               <div key={idx} className="flex items-center mb-1">
                                 <div className="w-2 h-2 rounded-full bg-blue-400 mr-1"></div>
                                 {highlight}
@@ -369,7 +386,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
             <p className="text-muted-foreground">{summary}</p>
             <h4 className="font-medium mb-2">Our Recommendations</h4>
             <div className="space-y-4">
-              {areas.map((area, index) => (
+              {Array.isArray(areas) && areas.map((area, index) => (
                 <div key={area.name} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="flex items-start justify-between">
                     <div>
@@ -386,7 +403,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
                     <span className="text-lg font-semibold text-blue-600">{area.score}%</span>
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-2">
-                    {area.highlights.map((highlight, idx) => (
+                    {Array.isArray(area.highlights) && area.highlights.map((highlight, idx) => (
                       <div key={idx} className="flex items-center text-sm text-gray-600">
                         <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
                         {highlight}
