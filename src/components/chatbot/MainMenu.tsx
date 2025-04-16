@@ -1,5 +1,6 @@
+
 import React from "react";
-import { Home, Users, Building2, Train, Laptop } from "lucide-react";
+import { Home, Users, Building2, Train, Laptop, ChevronRight, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -15,6 +16,11 @@ interface MainMenuProps {
 
 const MainMenu: React.FC<MainMenuProps> = ({ onSelect, sectionProgress, completedSections }) => {
   const totalProgress = (completedSections / 5) * 100;
+
+  const handleGetRecommendations = () => {
+    // This will trigger the full recommendations view
+    onSelect("basic-questions");
+  };
 
   const menuItems = [
     {
@@ -87,6 +93,23 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelect, sectionProgress, complete
             />
           </div>
         </div>
+
+        {completedSections > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mb-8"
+          >
+            <Button
+              onClick={handleGetRecommendations}
+              className="px-6 py-6 text-lg rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 shadow-lg"
+            >
+              <MessageCircle className="mr-2 h-6 w-6" />
+              View Full Recommendations
+            </Button>
+          </motion.div>
+        )}
       </div>
 
       <div className="grid gap-4">
@@ -98,34 +121,39 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelect, sectionProgress, complete
             transition={{ duration: 0.3, delay: index * 0.1 }}
           >
             <Card
-              className={`group p-4 cursor-pointer transition-all hover:shadow-lg ${
-                sectionProgress[item.id].completed ? 'border-green-200 bg-green-50' : ''
+              className={`group p-4 cursor-pointer transition-all hover:shadow-lg transform hover:scale-[1.02] ${
+                sectionProgress[item.id].completed ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 'hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50'
               }`}
               onClick={() => onSelect(item.id)}
             >
               <div className="flex items-start gap-4">
-                <div className={`p-3 rounded-lg bg-gradient-to-br ${item.gradient} transform transition-transform group-hover:scale-110`}>
+                <div className={`p-3 rounded-lg bg-gradient-to-br ${item.gradient} transform transition-transform group-hover:scale-110 shadow-md`}>
                   <item.icon className="h-6 w-6 text-white" />
                 </div>
                 <div className="flex-grow">
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold">{item.title}</h3>
+                    <h3 className="font-semibold text-lg">{item.title}</h3>
                     {sectionProgress[item.id].completed ? (
-                      <Badge variant="outline" className="bg-green-100 text-green-700">
+                      <Badge variant="outline" className="bg-green-100 text-green-700 animate-pulse">
                         Completed
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="bg-blue-100 text-blue-700">
-                        Available
+                        <ChevronRight className="h-4 w-4 mr-1" />
+                        Start
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm text-muted-foreground">{item.description}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
                   {sectionProgress[item.id].completed && (
-                    <div className="mt-2 flex items-center text-xs text-green-600">
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="mt-2 flex items-center text-xs text-green-600"
+                    >
                       <div className="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5" />
                       All questions answered
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               </div>
