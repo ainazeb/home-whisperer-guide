@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { ChevronLeft, Play, ThumbsUp, Pause, MapPin, Building2, Train, Home, Trees } from "lucide-react";
+import { ChevronLeft, Play, ThumbsUp, Pause, MapPin, Building2, Train, Home, Trees, Edit, Map as MapIcon, MessageCircle, BarChart3, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatSection } from "@/components/ChatbotInterface";
@@ -83,44 +83,71 @@ const getResultContent = (section: ChatSection, answers: Record<string, any>) =>
     }
   ];
 
+  // Get answer statistics and summaries based on section
   switch (section) {
     case "basic-questions":
       return {
-        title: "Your Ideal Home Profile",
-        summary: `Based on our analysis of your preferences and ${areas.length} distinct neighborhoods, we've identified several excellent matches. Your budget of ${formatCurrency(answers.budget)} and lifestyle preferences align particularly well with ${areas[0].name} and ${areas[1].name}, offering an optimal balance of amenities and value.`,
-        recommendation: `Primary Recommendation: ${areas[0].name} (${areas[0].score}% match)\n${areas[0].description}. Key highlights include ${areas[0].highlights.join(", ")}.\n\nAlternative Options:\n${areas.slice(1).map(area => `- ${area.name} (${area.score}% match): ${area.description}`).join("\n")}`,
+        title: "Your Home Preferences",
+        summary: `We've analyzed your basic preferences including budget of ${formatCurrency(answers.budget)}, preferred location in ${formatLocation(answers.location)}, and interest in ${formatBuildingAge(answers.buildingAge)} buildings with features like ${formatFeatures(answers.features)}.`,
+        statistics: [
+          { label: "Budget Range", value: formatCurrency(answers.budget) },
+          { label: "Location Preference", value: formatLocation(answers.location) },
+          { label: "Building Age", value: formatBuildingAge(answers.buildingAge) },
+          { label: "Desired Features", value: formatFeatures(answers.features) }
+        ],
+        exploreSuggestion: "Based on your preferences, we recommend exploring urban areas with modern amenities that match your budget constraints.",
         areas: areas
       };
       
     case "demographics":
       return {
-        title: "Neighborhood Demographics",
-        summary: `You're interested in areas with ${formatDemographics(answers.ageGroups)} and prefer neighborhoods with ${formatHouseholdType(answers.householdType)}. The demographic projections are ${formatImportance(answers.futureProjections)} to you.`,
-        recommendation: "Based on your preferences, the Riverdale district would be an excellent match. It has a growing population of your preferred demographic groups and is projected to maintain this trend over the next 20 years according to city planning data.",
+        title: "Demographics Analysis",
+        summary: `You're interested in neighborhoods with ${formatDemographics(answers.ageGroups)} and prefer areas with ${formatHouseholdType(answers.householdType)}. Future demographic projections are ${formatImportance(answers.futureProjections)} to you.`,
+        statistics: [
+          { label: "Preferred Age Groups", value: formatDemographics(answers.ageGroups) },
+          { label: "Household Types", value: formatHouseholdType(answers.householdType) },
+          { label: "Importance of Projections", value: formatImportance(answers.futureProjections) }
+        ],
+        exploreSuggestion: "Based on your demographic preferences, areas with diverse population composition and growth trends would be most suitable for your needs.",
         areas: areas
       };
       
     case "construction":
       return {
         title: "Development & Green Space",
-        summary: `Access to green spaces is ${formatImportance(answers.greenSpace)} for you, and you want to be near amenities like ${formatAmenities(answers.amenities)}. You've indicated that you're ${formatDevelopmentComfort(answers.development)} with ongoing construction.`,
-        recommendation: "The Westgate area matches your preferences well. It has extensive parks and green spaces, while also featuring your desired amenities. The area has a moderate amount of planned development that shouldn't be disruptive based on your comfort level with construction.",
+        summary: `You've indicated that green spaces are ${formatImportance(answers.greenSpace)} to you, with preferred access to ${formatAmenities(answers.amenities)}. You're ${formatDevelopmentComfort(answers.development)} with construction in your area.`,
+        statistics: [
+          { label: "Green Space Importance", value: formatImportance(answers.greenSpace) },
+          { label: "Desired Amenities", value: formatAmenities(answers.amenities) },
+          { label: "Construction Comfort", value: formatDevelopmentComfort(answers.development) }
+        ],
+        exploreSuggestion: "Areas balancing established infrastructure with appropriate levels of ongoing development would best match your comfort with construction activity.",
         areas: areas
       };
       
     case "transportation":
       return {
-        title: "Mobility & Transportation",
-        summary: `You need access to ${formatTransportation(answers.transportTypes)} and prefer a maximum commute time of ${answers.commuteTime} minutes. Future transportation improvements are ${formatTransportImportance(answers.futureTransport)} to you.`,
-        recommendation: "The Oakridge neighborhood offers excellent transportation options matching your preferences. The area is well-connected with your preferred transit types and has several planned improvements that will further enhance mobility in the coming years.",
+        title: "Mobility Analysis",
+        summary: `Your transportation preferences include access to ${formatTransportation(answers.transportTypes)} with a maximum commute time of ${answers.commuteTime} minutes. Future transportation improvements are ${formatTransportImportance(answers.futureTransport)} to you.`,
+        statistics: [
+          { label: "Preferred Transport", value: formatTransportation(answers.transportTypes) },
+          { label: "Max Commute Time", value: `${answers.commuteTime} minutes` },
+          { label: "Future Transit Importance", value: formatTransportImportance(answers.futureTransport) }
+        ],
+        exploreSuggestion: "Neighborhoods with strong existing transit infrastructure and planned improvements would align well with your mobility priorities.",
         areas: areas
       };
       
     case "smart-home":
       return {
-        title: "Smart Home Technology Profile",
-        summary: `You're interested in smart home features like ${formatSmartFeatures(answers.smartFeatures)} and rate the importance of smart technology as ${formatImportance(answers.smartImportance)}. You want a home that's ${formatFutureProof(answers.futureProof)} for future technology.`,
-        recommendation: "The newly developed TechRidge properties would be perfect for your smart home preferences. These homes come with many of your desired features pre-installed and have infrastructure ready for future upgrades. The neighborhood also has advanced fiber connectivity and smart city initiatives.",
+        title: "Technology Profile",
+        summary: `You're interested in smart home features like ${formatSmartFeatures(answers.smartFeatures)} and consider smart technology ${formatImportance(answers.smartImportance)} for your home. You prefer a home that's ${formatFutureProof(answers.futureProof)} for future technology.`,
+        statistics: [
+          { label: "Desired Smart Features", value: formatSmartFeatures(answers.smartFeatures) },
+          { label: "Tech Importance", value: formatImportance(answers.smartImportance) },
+          { label: "Future-Proofing", value: formatFutureProof(answers.futureProof) }
+        ],
+        exploreSuggestion: "Newer developments with integrated smart home infrastructure would best accommodate your technology preferences and future-proofing needs.",
         areas: areas
       };
       
@@ -128,7 +155,8 @@ const getResultContent = (section: ChatSection, answers: Record<string, any>) =>
       return {
         title: "Your Results",
         summary: "Thank you for sharing your preferences with us.",
-        recommendation: "Based on your selections, we've compiled some initial recommendations. For more detailed insights, please contact our specialists.",
+        statistics: [],
+        exploreSuggestion: "Based on your selections, we can provide personalized recommendations to help you find your ideal home environment.",
         areas: areas
       };
   };
@@ -138,7 +166,6 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   const { toast } = useToast();
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
-  const [areaExpanded, setAreaExpanded] = useState<string | null>(null);
   const [showFullRecommendation, setShowFullRecommendation] = useState(false);
   
   const resultContent = getResultContent(section, answers);
@@ -146,7 +173,8 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   const { 
     title = "Your Results", 
     summary = "Thank you for sharing your preferences with us.", 
-    recommendation = "Based on your selections, we've compiled some initial recommendations.",
+    statistics = [],
+    exploreSuggestion = "Based on your selections, we can provide personalized recommendations.",
     areas = []
   } = resultContent || {};
   
@@ -159,55 +187,13 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
     setShowFullRecommendation(true);
   };
   
-  const handleSaveResults = () => {
+  const handleModifyAnswers = () => {
     toast({
-      title: "Results saved successfully!",
-      description: "Your preferences and results have been saved to your account.",
-      duration: 3000,
+      title: "Returning to questionnaire",
+      description: "You can now modify your answers.",
+      duration: 2000,
     });
-  };
-  
-  const toggleAudioPlay = () => {
-    setIsPlaying(!isPlaying);
-    
-    if (!isPlaying) {
-      let progress = 0;
-      const interval = setInterval(() => {
-        progress += 1;
-        setAudioProgress(progress);
-        if (progress >= 100) {
-          setIsPlaying(false);
-          clearInterval(interval);
-          setAudioProgress(0);
-          
-          toast({
-            title: "Audio summary completed",
-            description: "The full audio summary has finished playing.",
-            duration: 2000,
-          });
-        }
-      }, 100);
-    } else {
-      setAudioProgress(0);
-      
-      toast({
-        title: "Audio paused",
-        description: "You can resume the audio summary at any time.",
-        duration: 2000,
-      });
-    }
-  };
-  
-  const handleAreaClick = (areaId: string) => {
-    setAreaExpanded(areaExpanded === areaId ? null : areaId);
-    
-    if (areaExpanded !== areaId) {
-      toast({
-        title: areaId === 'map' ? "Map view expanded" : areaId === 'preview' ? "Area preview expanded" : "Data insights expanded",
-        description: "Click again to collapse this section.",
-        duration: 2000,
-      });
-    }
+    onBack();
   };
   
   if (showFullRecommendation) {
@@ -223,225 +209,114 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
       <div className="flex items-center mb-6">
         <Button variant="ghost" onClick={onBack} className="mr-2">
           <ChevronLeft className="h-5 w-5" />
-          Back to Menu
+          Back to Questions
         </Button>
         <h2 className="text-xl font-semibold flex-1 text-center">
-          Your Results
+          Your Response Analysis
         </h2>
       </div>
       
       <div className="text-center mb-6">
-        <h3 className="text-2xl font-bold mb-2">{title}</h3>
-        <p className="text-muted-foreground">
-          Based on your preferences, we've compiled some insights for you.
+        <h3 className="text-2xl font-bold text-primary mb-2">{title}</h3>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          We've analyzed your answers and prepared a summary of your preferences.
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className={`overflow-hidden transition-all duration-500 ${areaExpanded === 'map' ? 'md:col-span-2' : ''}`}>
-          <CardContent className="p-0 overflow-hidden rounded-lg">
-            <div 
-              className={`${areaExpanded === 'map' ? 'h-96' : 'h-64'} bg-blue-100 flex items-center justify-center relative cursor-pointer transition-all duration-500`} 
-              onClick={() => handleAreaClick('map')}
-            >
-              <div className="text-center p-4">
-                <h3 className="text-lg font-medium mb-2 flex items-center justify-center">
-                  <MapPin className="w-5 h-5 mr-2" />
-                  Area Map
-                </h3>
-                <div className="grid grid-cols-1 gap-4">
-                  {areaExpanded === 'map' ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 animate-fade-in">
-                      {Array.isArray(areas) && areas.map((area, index) => (
-                        <div key={area.name} className="bg-blue-50 p-3 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
-                          <div className="text-2xl mb-2">{index === 0 ? '🌟' : '📍'}</div>
-                          <p className="text-sm font-medium text-blue-700">{area.name}</p>
-                          <p className="text-xs text-blue-600">{area.score}% Match</p>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-4xl mb-2 animate-bounce">🗺️</div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className={`overflow-hidden transition-all duration-500 ${areaExpanded === 'preview' ? 'md:col-span-2' : ''}`}>
-          <CardContent className="p-0 overflow-hidden rounded-lg">
-            <div 
-              className={`${areaExpanded === 'preview' ? 'h-96' : 'h-64'} bg-green-100 flex items-center justify-center relative cursor-pointer transition-all duration-500`}
-              onClick={() => handleAreaClick('preview')}
-            >
-              <div className="text-center p-4">
-                <h3 className="text-lg font-medium mb-2">Area Preview</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
-                    <div className="text-4xl animate-pulse">🏘️</div>
-                  </div>
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
-                    <div className="text-4xl animate-pulse">🌳</div>
-                  </div>
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
-                    <div className="text-4xl animate-pulse">🏢</div>
-                  </div>
-                  <div className="bg-green-50 p-2 rounded-lg border border-green-200 hover:bg-green-100 transition-colors flex items-center justify-center">
-                    <div className="text-4xl animate-pulse">🛣️</div>
-                  </div>
-                </div>
-                {areaExpanded === 'preview' && (
-                  <div className="mt-4 animate-fade-in">
-                    <Button size="sm" variant="outline" className="text-xs" onClick={(e) => e.stopPropagation()}>View Gallery</Button>
-                    <Button size="sm" variant="outline" className="text-xs ml-2" onClick={(e) => e.stopPropagation()}>Street View</Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className={`md:col-span-2 transition-all duration-500 ${areaExpanded === 'chart' ? 'md:col-span-3' : ''}`}>
-          <CardContent className="p-4">
-            <h3 className="text-lg font-medium mb-4 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleAreaClick('chart')}>
-              Area Comparison {areaExpanded === 'chart' ? '(Click to Collapse)' : '(Click to Expand)'}
-            </h3>
-            <div className={`${areaExpanded === 'chart' ? 'h-96' : 'h-48'} bg-purple-50 rounded-lg border border-purple-100 flex items-center justify-center transition-all duration-500`}
-                onClick={() => handleAreaClick('chart')}>
-              <div className="text-center w-full p-4">
-                {areaExpanded === 'chart' ? (
-                  <div className="w-full animate-fade-in">
-                    <h4 className="text-sm font-medium mb-4">Area Comparison Based on Your Preferences</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                      {Array.isArray(areas) && areas.map((area) => (
-                        <div key={area.name} className="flex flex-col items-center">
-                          <div className={`h-${area.score} w-16 bg-blue-400 rounded-t-lg transform transition-all duration-700 hover:scale-y-110 hover:bg-blue-500`}
-                               style={{ height: `${area.score}px` }}>
-                          </div>
-                          <p className="text-xs mt-1 font-medium">{area.name}</p>
-                          <p className="text-xs text-blue-700">{area.score}%</p>
-                          <div className="mt-2 text-xs text-gray-600">
-                            {Array.isArray(area.highlights) && area.highlights.slice(0, 2).map((highlight, idx) => (
-                              <div key={idx} className="flex items-center mb-1">
-                                <div className="w-2 h-2 rounded-full bg-blue-400 mr-1"></div>
-                                {highlight}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    <div className="text-4xl mb-2 animate-pulse">📊</div>
-                    <p className="text-sm text-purple-700">Click to view detailed area comparison</p>
-                  </>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <h3 className="text-lg font-medium mb-4">Audio Summary</h3>
-            <div className="h-48 bg-amber-50 rounded-lg border border-amber-100 flex flex-col items-center justify-center p-4">
-              <div className={`text-4xl mb-4 ${isPlaying ? 'animate-pulse' : ''}`}>🎧</div>
-              <p className="text-sm text-amber-700 mb-4">Listen to our AI narration</p>
-              {isPlaying && (
-                <div className="w-full mb-4">
-                  <Progress value={audioProgress} className="h-2" />
-                </div>
-              )}
-              <Button 
-                className="gap-2 hover:bg-amber-600 transition-colors" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  toggleAudioPlay();
-                }}
-              >
-                {isPlaying ? (
-                  <>
-                    <Pause className="h-4 w-4" /> Pause Audio
-                  </>
-                ) : (
-                  <>
-                    <Play className="h-4 w-4" /> Play Audio
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      
-      <Card>
+      {/* Answer Summary Card */}
+      <Card className="mb-6">
         <CardContent className="p-6">
-          <h3 className="text-xl font-medium mb-4">Detailed Analysis</h3>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">{summary}</p>
-            <h4 className="font-medium mb-2">Our Recommendations</h4>
-            <div className="space-y-4">
-              {Array.isArray(areas) && areas.map((area, index) => (
-                <div key={area.name} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h5 className="font-medium flex items-center">
-                        {index === 0 ? <ThumbsUp className="w-4 h-4 mr-2 text-green-500" /> : 
-                         index === 1 ? <Building2 className="w-4 h-4 mr-2 text-blue-500" /> :
-                         index === 2 ? <Train className="w-4 h-4 mr-2 text-purple-500" /> :
-                         index === 3 ? <Home className="w-4 h-4 mr-2 text-amber-500" /> :
-                         <Trees className="w-4 h-4 mr-2 text-green-500" />}
-                        {area.name}
-                      </h5>
-                      <p className="text-sm text-muted-foreground mt-1">{area.description}</p>
-                    </div>
-                    <span className="text-lg font-semibold text-blue-600">{area.score}%</span>
-                  </div>
-                  <div className="mt-3 grid grid-cols-2 gap-2">
-                    {Array.isArray(area.highlights) && area.highlights.map((highlight, idx) => (
-                      <div key={idx} className="flex items-center text-sm text-gray-600">
-                        <div className="w-2 h-2 rounded-full bg-blue-400 mr-2"></div>
-                        {highlight}
-                      </div>
-                    ))}
-                  </div>
+          <h3 className="text-lg font-semibold mb-4 flex items-center">
+            <BarChart3 className="h-5 w-5 mr-2 text-primary" />
+            Answer Summary
+          </h3>
+          <p className="text-muted-foreground mb-6">{summary}</p>
+          
+          {statistics.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {statistics.map((stat, index) => (
+                <div key={index} className="bg-muted/50 p-3 rounded-lg border">
+                  <h4 className="text-sm font-medium">{stat.label}</h4>
+                  <p className="text-sm text-primary-foreground/80">{stat.value}</p>
                 </div>
               ))}
             </div>
+          )}
+          
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4">
+            <h4 className="font-medium mb-2 flex items-center">
+              <MapIcon className="h-4 w-4 mr-2 text-blue-600" />
+              Area Recommendations Preview
+            </h4>
+            <p className="text-sm text-muted-foreground">{exploreSuggestion}</p>
           </div>
         </CardContent>
       </Card>
       
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
-          Modify Your Answers
-        </Button>
-        <div className="space-x-4">
-          <Button 
-            variant="secondary" 
-            onClick={handleSaveResults}
-            className="hover:bg-gray-200 transition-colors"
-          >
-            Save Results
-          </Button>
-          <Button 
-            onClick={handleGetRecommendation}
-            className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 transition-colors transform hover:scale-105"
-          >
-            <ThumbsUp className="mr-2 h-5 w-5" /> 
-            Get Full Recommendation
-          </Button>
-        </div>
-      </div>
+      {/* Buttons Card */}
+      <Card className="border-2 border-blue-100">
+        <CardContent className="p-6">
+          <div className="text-center space-y-6">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg">
+              <h3 className="text-lg font-medium mb-2">Ready to See Your Tailored Recommendations?</h3>
+              <p className="text-muted-foreground mb-4">
+                Based on your responses, we can generate personalized area recommendations 
+                with detailed insights to help you find the perfect home.
+              </p>
+              
+              <div className="flex flex-col md:flex-row justify-center gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={handleModifyAnswers}
+                  className="flex items-center"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  Modify Your Answers
+                </Button>
+                
+                <Button 
+                  onClick={handleGetRecommendation}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 transition-colors transform hover:scale-105"
+                >
+                  <ThumbsUp className="mr-2 h-4 w-4" /> 
+                  Get Full Recommendations
+                </Button>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-muted/30 p-4 rounded-lg border text-center">
+                <MapIcon className="h-10 w-10 mx-auto mb-2 text-blue-500" />
+                <h4 className="font-medium mb-1">Area Maps</h4>
+                <p className="text-xs text-muted-foreground">
+                  View detailed maps of recommended neighborhoods
+                </p>
+              </div>
+              
+              <div className="bg-muted/30 p-4 rounded-lg border text-center">
+                <Star className="h-10 w-10 mx-auto mb-2 text-amber-500" />
+                <h4 className="font-medium mb-1">Top Matches</h4>
+                <p className="text-xs text-muted-foreground">
+                  Discover neighborhoods with highest compatibility
+                </p>
+              </div>
+              
+              <div className="bg-muted/30 p-4 rounded-lg border text-center">
+                <MessageCircle className="h-10 w-10 mx-auto mb-2 text-green-500" />
+                <h4 className="font-medium mb-1">AI Insights</h4>
+                <p className="text-xs text-muted-foreground">
+                  Get AI-powered analysis of each recommendation
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
 
+// All the formatting helper functions
 const formatCurrency = (value: number) => {
   return value ? `$${value.toLocaleString()}` : "your budget";
 };

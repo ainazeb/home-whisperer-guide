@@ -53,8 +53,8 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
     setShowResults(true);
     
     toast({
-      title: "Generating results",
-      description: "Analyzing your preferences...",
+      title: "Analyzing responses",
+      description: "Processing your preferences...",
       duration: 2000,
     });
   };
