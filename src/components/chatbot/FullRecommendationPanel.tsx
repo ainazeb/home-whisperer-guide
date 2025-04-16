@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { ChevronLeft, MapPin, Home, Users, Building2, Train, Laptop } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,9 +33,22 @@ import { Badge } from "@/components/ui/badge";
 interface FullRecommendationPanelProps {
   answers: Record<string, any>;
   onBack: () => void;
+  areas?: {
+    name: string;
+    score: number;
+    description: string;
+    highlights: string[];
+    keyFeatures: {
+      lifestyle: number;
+      amenities: number;
+      transport: number;
+      safety: number;
+      value: number;
+    };
+  }[];
 }
 
-const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answers, onBack }) => {
+const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answers, onBack, areas }) => {
   const [selectedArea, setSelectedArea] = useState<string>("westside");
   
   // Spider chart data for area comparison

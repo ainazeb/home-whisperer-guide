@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronLeft, Play, ThumbsUp, Pause, MapPin, Building2, Train, Home, Park } from "lucide-react";
+import { ChevronLeft, Play, ThumbsUp, Pause, MapPin, Building2, Train, Home, Trees } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChatSection } from "@/components/ChatbotInterface";
@@ -198,7 +198,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   };
   
   if (showFullRecommendation) {
-    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} areas={areas} />;
+    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} />;
   }
   
   return (
@@ -378,7 +378,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
                          index === 1 ? <Building2 className="w-4 h-4 mr-2 text-blue-500" /> :
                          index === 2 ? <Train className="w-4 h-4 mr-2 text-purple-500" /> :
                          index === 3 ? <Home className="w-4 h-4 mr-2 text-amber-500" /> :
-                         <Park className="w-4 h-4 mr-2 text-green-500" />}
+                         <Trees className="w-4 h-4 mr-2 text-green-500" />}
                         {area.name}
                       </h5>
                       <p className="text-sm text-muted-foreground mt-1">{area.description}</p>
