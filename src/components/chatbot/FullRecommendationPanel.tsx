@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronLeft, MapPin, Home, Users, Building2, Train, Laptop } from "lucide-react";
+import { ChevronLeft, MapPin, Home, Users, Building2, Train, Laptop, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -48,8 +48,27 @@ interface FullRecommendationPanelProps {
   }[];
 }
 
-const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answers, onBack, areas }) => {
-  const [selectedArea, setSelectedArea] = useState<string>("westside");
+const areaImages = {
+  "Downtown District": "https://images.unsplash.com/photo-1466442929976-97f336a657be",
+  "Westside Village": "https://images.unsplash.com/photo-1472396961693-142e6e269027",
+  "Tech Valley": "https://images.unsplash.com/photo-1500673922987-e212871fec22",
+  "Heritage District": "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
+  "Green Haven": "https://images.unsplash.com/photo-1518005020951-eccb494ad742"
+};
+
+const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answers, onBack, areas = [] }) => {
+  const [selectedArea, setSelectedArea] = useState<string>(areas[0]?.name || "westside");
+  
+  // Prepare data for spider chart from the selected area
+  const getRadarData = (area: typeof areas[0]) => {
+    return [
+      { subject: 'Lifestyle', value: area.keyFeatures.lifestyle },
+      { subject: 'Amenities', value: area.keyFeatures.amenities },
+      { subject: 'Transport', value: area.keyFeatures.transport },
+      { subject: 'Safety', value: area.keyFeatures.safety },
+      { subject: 'Value', value: area.keyFeatures.value }
+    ];
+  };
   
   // Spider chart data for area comparison
   const areaComparisonData = [
@@ -203,6 +222,87 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
           Based on your responses across all categories, we've analyzed which areas best match your preferences. 
           Explore the details below to find your perfect neighborhood.
         </p>
+      </div>
+      
+      {/* Top Recommendations Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {areas && areas.length > 0 ? (
+          areas.map((area, index) => (
+            <Card 
+              key={area.name}
+              className={`${selectedArea === area.name ? 'border-2 border-blue-500' : ''} transition-all duration-300 hover:shadow-lg cursor-pointer`}
+              onClick={() => setSelectedArea(area.name)}
+            >
+              <CardContent className="p-0">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={areaImages[area.name as keyof typeof areaImages] || "https://images.unsplash.com/photo-1466442929976-97f336a657be"} 
+                    alt={area.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <Badge className="bg-blue-500">
+                      {area.score}% Match
+                    </Badge>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold mb-2 flex items-center">
+                    {index === 0 && <Star className="w-4 h-4 text-yellow-500 mr-2" />}
+                    {area.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3">{area.description}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {area.highlights.slice(0, 2).map((highlight, idx) => (
+                      <div key={idx} className="flex items-center text-xs text-blue-600">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5" />
+                        {highlight}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          ["westside", "downtown", "eastside", "suburbs"].map((area) => (
+            <Card 
+              key={area}
+              className={`${selectedArea === area ? 'border-2 border-blue-500' : ''} transition-all duration-300 hover:shadow-lg cursor-pointer`}
+              onClick={() => handleAreaSelect(area)}
+            >
+              <CardContent className="p-0">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={areaDetails[area as keyof typeof areaDetails].imageUrl} 
+                    alt={areaDetails[area as keyof typeof areaDetails].name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2">
+                    <Badge className="bg-blue-500">
+                      {areaDetails[area as keyof typeof areaDetails].recommendationScore}% Match
+                    </Badge>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="text-lg font-semibold mb-2 flex items-center">
+                    {area === "westside" && <Star className="w-4 h-4 text-yellow-500 mr-2" />}
+                    {areaDetails[area as keyof typeof areaDetails].name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mb-3">{areaDetails[area as keyof typeof areaDetails].description.substring(0, 100)}...</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {areaDetails[area as keyof typeof areaDetails].keyPoints.slice(0, 2).map((point, idx) => (
+                      <div key={idx} className="flex items-center text-xs text-blue-600">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5" />
+                        {point.substring(0, 30)}...
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
       
       {/* Top Recommendation */}

@@ -198,7 +198,7 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ section, answers, onBack })
   };
   
   if (showFullRecommendation) {
-    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} />;
+    return <FullRecommendationPanel answers={answers} onBack={() => setShowFullRecommendation(false)} areas={areas} />;
   }
   
   return (
