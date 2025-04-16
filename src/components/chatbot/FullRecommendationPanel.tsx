@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { ChevronLeft, MapPin, Home, Users, Building2, Train, Laptop, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -209,13 +210,13 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
   
   // Helper function to get the appropriate area data
   const getAreaData = () => {
-    if (isAreaFromProps) {
+    if (isAreaFromProps && selectedAreaFromProps) {
       return {
-        name: selectedAreaFromProps?.name || "",
-        description: selectedAreaFromProps?.description || "",
-        keyPoints: selectedAreaFromProps?.highlights || [],
-        imageUrl: areaImages[selectedAreaFromProps?.name as keyof typeof areaImages] || "https://images.unsplash.com/photo-1466442929976-97f336a657be",
-        recommendationScore: selectedAreaFromProps?.score || 0
+        name: selectedAreaFromProps.name || "",
+        description: selectedAreaFromProps.description || "",
+        keyPoints: selectedAreaFromProps.highlights || [],
+        imageUrl: areaImages[selectedAreaFromProps.name as keyof typeof areaImages] || "https://images.unsplash.com/photo-1466442929976-97f336a657be",
+        recommendationScore: selectedAreaFromProps.score || 0
       };
     } else {
       // Handle traditional way for the hardcoded areas
@@ -373,7 +374,6 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
         </CardContent>
       </Card>
       
-      {/* The rest of the component remains unchanged */}
       {/* Area Comparison */}
       <Card className="mb-8">
         <CardContent className="p-6">
@@ -647,4 +647,290 @@ const FullRecommendationPanel: React.FC<FullRecommendationPanelProps> = ({ answe
                               <span>Westside Commons Park Expansion (2024-2025)</span>
                             </li>
                             <li className="flex items-start">
-                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0"
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>New Tech Campus Construction (2023-2026)</span>
+                            </li>
+                          </>
+                        ) : selectedArea === "eastside" ? (
+                          <>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Historic District Revitalization (2023-2025)</span>
+                            </li>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Light Rail Extension Phase 1 (2024-2027)</span>
+                            </li>
+                          </>
+                        ) : (
+                          <>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Community Recreation Center (2024-2025)</span>
+                            </li>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Nature Preserve Trails Network (2023-2024)</span>
+                            </li>
+                          </>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-3">Future Outlook</h4>
+                  <div className="space-y-4">
+                    <div className="p-3 rounded-lg border">
+                      <h5 className="text-sm font-medium mb-1">5-Year Projection</h5>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedArea === "downtown" 
+                          ? "Downtown is expected to see continued density increases with several mixed-use high-rises planned. The area will benefit from major transit improvements and cultural venue expansions." 
+                          : selectedArea === "westside" 
+                            ? "The Westside will maintain its balanced development approach with selective mid-rise projects and significant public space enhancements. The tech corridor will continue to attract innovation-focused businesses." 
+                            : selectedArea === "eastside" 
+                              ? "The Eastside is poised for the most dramatic transformation, with several former industrial sites being converted to residential and commercial use. Property values are projected to increase 15-20% over five years." 
+                              : "The suburbs will see modest, carefully managed growth focused on enhancing existing community centers. New single-family home developments will incorporate more sustainable building practices."}
+                      </p>
+                    </div>
+                    
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <h5 className="text-sm font-medium mb-1">Investment Potential</h5>
+                      <div className="mt-2">
+                        <div className="flex justify-between text-xs mb-1">
+                          <span>Growth Potential</span>
+                          <span>{selectedArea === "downtown" ? "High" : selectedArea === "westside" ? "Medium-High" : selectedArea === "eastside" ? "Very High" : "Medium"}</span>
+                        </div>
+                        <Progress 
+                          value={selectedArea === "downtown" ? 85 : selectedArea === "westside" ? 75 : selectedArea === "eastside" ? 90 : 60} 
+                          className="h-2" 
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="transportation" className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-3">Transit Options</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {currentAreaData.name} offers {selectedArea === "downtown" ? "excellent" : selectedArea === "westside" ? "very good" : selectedArea === "eastside" ? "good" : "moderate"} transportation infrastructure. The area aligns with your preferences for {answers.transportTypes ? answers.transportTypes.join(", ") : "various transit options"}.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Public Transit Score</span>
+                        <span>{selectedArea === "downtown" ? "95/100" : selectedArea === "westside" ? "85/100" : selectedArea === "eastside" ? "78/100" : "62/100"}</span>
+                      </div>
+                      <Progress 
+                        value={selectedArea === "downtown" ? 95 : selectedArea === "westside" ? 85 : selectedArea === "eastside" ? 78 : 62} 
+                        className="h-2" 
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Walkability Score</span>
+                        <span>{selectedArea === "downtown" ? "92/100" : selectedArea === "westside" ? "80/100" : selectedArea === "eastside" ? "76/100" : "55/100"}</span>
+                      </div>
+                      <Progress 
+                        value={selectedArea === "downtown" ? 92 : selectedArea === "westside" ? 80 : selectedArea === "eastside" ? 76 : 55} 
+                        className="h-2" 
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Cycling Infrastructure</span>
+                        <span>{selectedArea === "downtown" ? "88/100" : selectedArea === "westside" ? "90/100" : selectedArea === "eastside" ? "75/100" : "70/100"}</span>
+                      </div>
+                      <Progress 
+                        value={selectedArea === "downtown" ? 88 : selectedArea === "westside" ? 90 : selectedArea === "eastside" ? 75 : 70} 
+                        className="h-2" 
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-3">Commute Analysis</h4>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-lg border">
+                      <h5 className="text-sm font-medium mb-1">Average Commute Times</h5>
+                      <table className="w-full text-xs">
+                        <tbody>
+                          <tr className="border-b">
+                            <td className="py-1.5">To Downtown</td>
+                            <td className="text-right font-medium">
+                              {selectedArea === "downtown" ? "5 min" : selectedArea === "westside" ? "15 min" : selectedArea === "eastside" ? "20 min" : "35 min"}
+                            </td>
+                          </tr>
+                          <tr className="border-b">
+                            <td className="py-1.5">To Major Employers</td>
+                            <td className="text-right font-medium">
+                              {selectedArea === "downtown" ? "10 min" : selectedArea === "westside" ? "10 min" : selectedArea === "eastside" ? "25 min" : "30 min"}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="py-1.5">To Airport</td>
+                            <td className="text-right font-medium">
+                              {selectedArea === "downtown" ? "25 min" : selectedArea === "westside" ? "15 min" : selectedArea === "eastside" ? "35 min" : "40 min"}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <h5 className="text-sm font-medium mb-1">Future Transportation Improvements</h5>
+                      <p className="text-xs text-muted-foreground">
+                        {selectedArea === "downtown" 
+                          ? "Planned subway line extension and pedestrian zone expansion will improve mobility in 2025." 
+                          : selectedArea === "westside" 
+                            ? "New express bus lines and expanded bike lane network scheduled for completion in 2024." 
+                            : selectedArea === "eastside" 
+                              ? "Light rail connection and transit hub renovation will enhance connectivity by 2026." 
+                              : "Regional rail station upgrade and new park-and-ride facility planned for 2025."}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="technology" className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-medium mb-3">Digital Infrastructure</h4>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {currentAreaData.name} has {selectedArea === "downtown" ? "cutting-edge" : selectedArea === "westside" ? "excellent" : selectedArea === "eastside" ? "good" : "improving"} technology infrastructure. This aligns with your preference for {answers.smartImportance ? (answers.smartImportance > 3 ? "advanced" : "standard") : "various"} smart home capabilities.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Fiber Internet Coverage</span>
+                        <span>{selectedArea === "downtown" ? "98%" : selectedArea === "westside" ? "95%" : selectedArea === "eastside" ? "85%" : "70%"}</span>
+                      </div>
+                      <Progress 
+                        value={selectedArea === "downtown" ? 98 : selectedArea === "westside" ? 95 : selectedArea === "eastside" ? 85 : 70} 
+                        className="h-2" 
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>5G Coverage</span>
+                        <span>{selectedArea === "downtown" ? "100%" : selectedArea === "westside" ? "98%" : selectedArea === "eastside" ? "90%" : "80%"}</span>
+                      </div>
+                      <Progress 
+                        value={selectedArea === "downtown" ? 100 : selectedArea === "westside" ? 98 : selectedArea === "eastside" ? 90 : 80} 
+                        className="h-2" 
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span>Smart City Initiatives</span>
+                        <span>{selectedArea === "downtown" ? "Very High" : selectedArea === "westside" ? "High" : selectedArea === "eastside" ? "Medium" : "Low"}</span>
+                      </div>
+                      <Progress 
+                        value={selectedArea === "downtown" ? 90 : selectedArea === "westside" ? 80 : selectedArea === "eastside" ? 60 : 40} 
+                        className="h-2" 
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-3">Smart Home Availability</h4>
+                  <div className="space-y-4">
+                    <div className="p-3 rounded-lg border">
+                      <h5 className="text-sm font-medium mb-2">New Construction Features</h5>
+                      <ul className="text-xs space-y-1.5">
+                        {selectedArea === "downtown" ? (
+                          <>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Fully integrated smart home systems standard in new buildings</span>
+                            </li>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Building-wide automation and security with resident app control</span>
+                            </li>
+                          </>
+                        ) : selectedArea === "westside" ? (
+                          <>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Smart home technology packages included in most new developments</span>
+                            </li>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Tech-forward amenities in shared spaces (EV charging, etc.)</span>
+                            </li>
+                          </>
+                        ) : selectedArea === "eastside" ? (
+                          <>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Smart features available as upgrades in most new constructions</span>
+                            </li>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Growing number of tech-enabled renovation projects</span>
+                            </li>
+                          </>
+                        ) : (
+                          <>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Basic smart home pre-wiring in select new developments</span>
+                            </li>
+                            <li className="flex items-start">
+                              <div className="mr-2 mt-1 h-1.5 w-1.5 rounded-full bg-blue-600 shrink-0" />
+                              <span>Growing adoption of DIY smart home systems</span>
+                            </li>
+                          </>
+                        )}
+                      </ul>
+                    </div>
+                    
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
+                      <h5 className="text-sm font-medium mb-1">Future-Proofing Score</h5>
+                      <div className="mt-2">
+                        <div className="flex justify-between items-center">
+                          <div className="w-full mr-3">
+                            <Progress 
+                              value={selectedArea === "downtown" ? 95 : selectedArea === "westside" ? 85 : selectedArea === "eastside" ? 75 : 65} 
+                              className="h-2" 
+                            />
+                          </div>
+                          <span className="text-xs font-medium whitespace-nowrap">
+                            {selectedArea === "downtown" ? "95/100" : selectedArea === "westside" ? "85/100" : selectedArea === "eastside" ? "75/100" : "65/100"}
+                          </span>
+                        </div>
+                        <p className="text-xs mt-2 text-muted-foreground">
+                          {selectedArea === "downtown" 
+                            ? "Buildings are designed to accommodate future technologies with minimal retrofitting." 
+                            : selectedArea === "westside" 
+                              ? "Good infrastructure foundations with room for technology expansion." 
+                              : selectedArea === "eastside" 
+                                ? "Mixed preparedness with newer developments featuring better tech readiness." 
+                                : "Basic infrastructure in place but may require significant upgrades for advanced features."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default FullRecommendationPanel;
