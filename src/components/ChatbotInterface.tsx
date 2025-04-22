@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,7 +18,8 @@ export type ChatSection =
   | "demographics" 
   | "construction" 
   | "transportation" 
-  | "smart-home";
+  | "smart-home"
+  | "results"; // Added "results" as a direct section type
 
 interface SectionProgress {
   completed: boolean;
@@ -33,7 +35,8 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
     "demographics": { completed: false, answers: {} },
     "construction": { completed: false, answers: {} },
     "transportation": { completed: false, answers: {} },
-    "smart-home": { completed: false, answers: {} }
+    "smart-home": { completed: false, answers: {} },
+    "results": { completed: false, answers: {} }
   });
   const { toast } = useToast();
 
@@ -49,14 +52,38 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
   }, [sectionProgress]);
 
   const handleSectionSelect = (section: ChatSection) => {
-    setCurrentSection(section);
-    setShowResults(false);
-    
-    toast({
-      title: "Section selected",
-      description: `Loading the ${sectionToDisplayName(section)} questionnaire.`,
-      duration: 2000,
-    });
+    if (section === "results") {
+      // Check if at least one section is completed
+      const hasCompletedSections = Object.values(sectionProgress).some(
+        section => section.completed
+      );
+      
+      if (hasCompletedSections) {
+        setCurrentSection("main"); // Stay on main
+        setShowResults(true); // But show results panel
+        
+        toast({
+          title: "Viewing recommendations",
+          description: "Here are your personalized recommendations based on completed sections.",
+          duration: 2000,
+        });
+      } else {
+        toast({
+          title: "Complete at least one section",
+          description: "Please answer questions in at least one category to get recommendations.",
+          duration: 2000,
+        });
+      }
+    } else {
+      setCurrentSection(section);
+      setShowResults(false);
+      
+      toast({
+        title: "Section selected",
+        description: `Loading the ${sectionToDisplayName(section)} questionnaire.`,
+        duration: 2000,
+      });
+    }
   };
 
   const handleBackToMenu = () => {
@@ -108,6 +135,7 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
       case "construction": return "Development & Construction";
       case "transportation": return "Transportation";
       case "smart-home": return "Smart Home";
+      case "results": return "Recommendations";
       default: return "Main Menu";
     }
   };
@@ -125,7 +153,7 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
         
         <CardContent className="flex-grow overflow-auto p-0">
           <div className="p-6 h-full">
-            {currentSection === "main" && (
+            {currentSection === "main" && !showResults && (
               <MainMenu 
                 onSelect={handleSectionSelect} 
                 sectionProgress={sectionProgress}
@@ -142,12 +170,12 @@ const ChatbotInterface: React.FC<ChatbotInterfaceProps> = ({ onClose }) => {
               />
             )}
             
-            {currentSection !== "main" && showResults && (
+            {showResults && (
               <ResultsPanel 
-                section={currentSection} 
+                section={currentSection === "main" ? "basic-questions" : currentSection}
                 answers={getAllAnswers()}
-                sectionAnswers={sectionProgress[currentSection].answers}
-                onBack={() => setShowResults(false)}
+                sectionAnswers={sectionProgress[currentSection === "main" ? "basic-questions" : currentSection].answers}
+                onBack={handleBackToMenu}
                 onModifyAnswers={() => setShowResults(false)}
                 completedSections={getCompletedSectionsCount()}
               />

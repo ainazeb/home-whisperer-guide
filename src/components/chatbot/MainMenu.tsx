@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Home, Users, Building2, Train, Laptop, ChevronRight, MessageCircle } from "lucide-react";
+import { Home, Users, Building2, Train, Laptop, ChevronRight, MessageCircle, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -18,8 +18,8 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelect, sectionProgress, complete
   const totalProgress = (completedSections / 5) * 100;
 
   const handleGetRecommendations = () => {
-    // This will trigger the full recommendations view
-    onSelect("basic-questions");
+    // Show full recommendations view instead of going to questions
+    onSelect("results");
   };
 
   const menuItems = [
@@ -68,6 +68,15 @@ const MainMenu: React.FC<MainMenuProps> = ({ onSelect, sectionProgress, complete
       className="space-y-6"
     >
       <div className="text-center">
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg"
+        >
+          <Bot className="h-12 w-12 text-white" />
+        </motion.div>
+        
         <motion.h2 
           initial={{ scale: 0.9 }}
           animate={{ scale: 1 }}
